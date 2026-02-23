@@ -8,7 +8,9 @@ import AttendanceView from '../views/intern/AttendanceView.vue';
 import ProfileView from '../views/intern/ProfileView.vue';
 import StaffDashboardView from '../views/staff/StaffDashboardView.vue';
 import NotificationsView from '../views/intern/NotificationsView.vue';
-
+import StaffLoginView from '../views/staff/StaffLoginView.vue';
+import ClientLogBook from '../views/client/ClientLogBook.vue';
+import ClientEvaluation from '../views/client/ClientEvaluation.vue';
 
 const routes = [
   {
@@ -55,6 +57,16 @@ const routes = [
     path: '/auth/register',
     name: 'Register',
     component: RegisterView
+  },
+  {
+    path: '/client/logbook',
+    name: 'ClientLogBook',
+    component: ClientLogBook
+  },
+  {
+    path: '/client/evaluation',
+    name: 'ClientEvaluation',
+    component: ClientEvaluation
   },
   {
     path: '/',
