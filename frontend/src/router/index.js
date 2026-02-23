@@ -3,6 +3,8 @@ import LoginView from '../views/intern/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import AdminLoginView from '../views/admin/AdminLoginView.vue';
 import StaffLoginView from '../views/staff/StaffLoginView.vue';
+import ClientLogBook from '../views/client/ClientLogBook.vue';
+import ClientEvaluation from '../views/client/ClientEvaluation.vue';
 
 const routes = [
   {
@@ -24,6 +26,16 @@ const routes = [
     path: '/auth/register',
     name: 'Register',
     component: RegisterView
+  },
+  {
+    path: '/client/logbook',
+    name: 'ClientLogBook',
+    component: ClientLogBook
+  },
+  {
+    path: '/client/evaluation',
+    name: 'ClientEvaluation',
+    component: ClientEvaluation
   },
   {
     path: '/',

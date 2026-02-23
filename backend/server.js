@@ -1,13 +1,36 @@
 const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
+const fs = require('fs');
+const path = require('path');
 
 // Make sure you create backend/serviceAccountKey.json from Firebase Console
-const serviceAccount = require('./serviceAccountKey.json');
+let credential;
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+  credential = admin.credential.applicationDefault();
+} else if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  try {
+    const parsed = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    credential = admin.credential.cert(parsed);
+  } catch (e) {
+    console.error('Invalid FIREBASE_SERVICE_ACCOUNT env var. Must be valid JSON.');
+    process.exit(1);
+  }
+} else {
+  const localKeyPath = path.join(__dirname, 'serviceAccountKey.json');
+  if (fs.existsSync(localKeyPath)) {
+    const serviceAccount = require('./serviceAccountKey.json');
+    credential = admin.credential.cert(serviceAccount);
+  } else {
+    console.error(
+      'Missing Firebase Admin credentials. Provide GOOGLE_APPLICATION_CREDENTIALS, FIREBASE_SERVICE_ACCOUNT, or create backend/serviceAccountKey.json'
+    );
+    process.exit(1);
+  }
+}
+
+admin.initializeApp({ credential });
 
 const db = admin.firestore();
 const app = express();
