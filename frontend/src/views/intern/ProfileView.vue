@@ -7,6 +7,7 @@
           <router-link to="/intern/dashboard">Dashboard</router-link>
           <router-link to="/intern/time">Time In / Out</router-link>
           <router-link to="/intern/attendance">My Attendance</router-link>
+          <router-link to="/intern/staff-status">Staff Status</router-link>
           <router-link to="/intern/notifications">Notifications</router-link>
           <router-link to="/intern/profile">Profile</router-link>
           <router-link to="/intern/settings">Settings</router-link>
@@ -29,82 +30,125 @@
     </header>
 
     <main class="profile-main">
-      <section class="card avatar-card">
-        <div class="avatar-wrapper">
-          <div class="avatar" v-if="intern.photoUrl">
-            <img :src="intern.photoUrl" alt="Profile picture" />
+      <form class="profile-form" @submit.prevent="handleSaveInfo">
+        
+        <!-- 1️⃣ Basic Information -->
+        <section class="card profile-section">
+          <div class="section-header">
+            <h2>1️⃣ Basic Information</h2>
+            <p class="note">Standard details of the intern.</p>
           </div>
-          <div class="avatar placeholder" v-else>
-            <span>{{ avatarInitials }}</span>
+          
+          <div class="avatar-row">
+            <div class="avatar-wrapper">
+              <div class="avatar" v-if="intern.photoUrl">
+                <img :src="intern.photoUrl" alt="Profile picture" />
+              </div>
+              <div class="avatar placeholder" v-else>
+                <span>{{ avatarInitials }}</span>
+              </div>
+            </div>
+            <div class="avatar-actions">
+              <label class="avatar-upload-btn">
+                <span>{{ uploadingPhoto ? 'Uploading...' : 'Upload Profile Picture' }}</span>
+                <input type="file" accept="image/*" @change="onPhotoSelected" :disabled="uploadingPhoto || !intern.id" />
+              </label>
+              <p v-if="photoError" class="note error-note">{{ photoError }}</p>
+            </div>
           </div>
-        </div>
-        <div class="avatar-actions">
-          <label class="avatar-upload-btn">
-            <span>{{ uploadingPhoto ? 'Uploading...' : 'Upload Profile Picture' }}</span>
-            <input type="file" accept="image/*" @change="onPhotoSelected" :disabled="uploadingPhoto || !intern.id" />
-          </label>
-          <p v-if="photoError" class="note error-note">{{ photoError }}</p>
-        </div>
-      </section>
 
-      <section class="card info-card">
-        <h2>Intern Information</h2>
-        <div class="info-grid">
-          <div>
-            <span class="label">Name</span>
-            <span class="value">{{ formattedName }}</span>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Full Name (Read Only)</label>
+              <input type="text" :value="formattedName" disabled class="readonly-input" />
+            </div>
+            <div class="form-group">
+              <label>Student ID / Intern ID</label>
+              <input type="text" :value="intern.username" disabled class="readonly-input" title="Your username acts as your Intern ID" />
+            </div>
+            <div class="form-group">
+              <label for="editEmail">Email Address</label>
+              <input id="editEmail" type="email" v-model="intern.email" placeholder="example@gmail.com" />
+            </div>
+            <div class="form-group">
+              <label for="editPhone">Contact Number</label>
+              <input id="editPhone" type="text" v-model="intern.phoneNumber" placeholder="09XX XXX XXXX" />
+            </div>
+            <div class="form-group full-width">
+              <label for="editAddress">Address</label>
+              <input id="editAddress" type="text" v-model="intern.address" placeholder="Full Home Address" />
+            </div>
+            <div class="form-group">
+              <label for="editGender">Gender</label>
+              <select id="editGender" v-model="intern.gender">
+                <option value="" disabled>Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="editDob">Date of Birth</label>
+              <input id="editDob" type="date" v-model="intern.dateOfBirth" />
+            </div>
           </div>
-      
-          <div>
-            <span class="label">Assigned Office</span>
-            <span class="value">{{ intern.assignedOffice || 'N/A' }}</span>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <section class="card info-card">
-        <h2>Edit Information</h2>
-        <form class="password-form" @submit.prevent="handleSaveInfo">
-          <div class="form-group">
-            <label for="editSchool">School</label>
-            <input
-              id="editSchool"
-              type="text"
-              v-model="intern.schoolOrUniversity"
-            />
+        <!-- 2️⃣ School Information -->
+        <section class="card profile-section">
+          <div class="section-header">
+            <h2>2️⃣ School Information</h2>
+            <p class="note">Educational background and internship duration.</p>
           </div>
-          <div class="form-group">
-            <label for="editRequiredHours">OJT Required Hours</label>
-            <input
-              id="editRequiredHours"
-              type="number"
-              min="0"
-              v-model.number="intern.ojtRequiredHours"
-            />
+          
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="editSchool">School Name</label>
+              <input id="editSchool" type="text" v-model="intern.schoolOrUniversity" placeholder="E.g., University of the Philippines" />
+            </div>
+            <div class="form-group">
+              <label for="editCourse">Course / Program</label>
+              <input id="editCourse" type="text" v-model="intern.course" placeholder="E.g., BS Information Technology" />
+            </div>
+            <div class="form-group">
+              <label for="editYear">Year Level</label>
+              <select id="editYear" v-model="intern.yearLevel">
+                <option value="" disabled>Select Year Level</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+                <option value="5th Year">5th Year</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="editRequiredHours">OJT Required Hours</label>
+              <input id="editRequiredHours" type="number" min="0" v-model.number="intern.ojtRequiredHours" placeholder="e.g. 486" />
+            </div>
+            <div class="form-group">
+              <label for="editStartDate">Start Date of Internship</label>
+              <input id="editStartDate" type="date" v-model="intern.startDate" />
+            </div>
+            <div class="form-group">
+              <label for="editEndDate">End Date of Internship</label>
+              <input id="editEndDate" type="date" v-model="intern.endDate" />
+            </div>
           </div>
-          <div class="form-group">
-            <label for="editPhone">Phone Number</label>
-            <input
-              id="editPhone"
-              type="text"
-              v-model="intern.phoneNumber"
-            />
-          </div>
-          <div class="form-group">
-            <label for="editEmail">Gmail</label>
-            <input
-              id="editEmail"
-              type="email"
-              v-model="intern.email"
-            />
-          </div>
-          <button type="submit" class="btn btn-save" :disabled="infoSaving || !intern.id">
-            {{ infoSaving ? 'Saving...' : 'Save' }}
-          </button>
-          <p v-if="infoMessage" class="note">{{ infoMessage }}</p>
+        </section>
+
+
+        <!-- Actions -->
+        <div class="action-bar">
+          <p v-if="infoMessage" class="note success-note">{{ infoMessage }}</p>
           <p v-if="infoError" class="note error-note">{{ infoError }}</p>
-        </form>
-      </section>
+          <button type="submit" class="btn btn-save" :disabled="infoSaving || !intern.id">
+            <span v-if="infoSaving">Saving Profile...</span>
+            <span v-else>Save Profile</span>
+          </button>
+        </div>
+
+      </form>
     </main>
   </div>
 </template>
@@ -132,6 +176,14 @@ export default {
         role: '',
         photoUrl: '',
         ojtRequiredHours: null,
+        // Added Profile Fields
+        address: '',
+        gender: '',
+        dateOfBirth: '',
+        course: '',
+        yearLevel: '',
+        startDate: '',
+        endDate: '',
       },
       notifications: [],
       unreadCount: 0,
@@ -273,11 +325,6 @@ export default {
         }
 
         this.infoSaving = true;
-        // Keep a copy of previous values to detect which fields changed
-        const prevSchool = this.intern.schoolOrUniversity || '';
-        const prevPhone = this.intern.phoneNumber || '';
-        const prevEmail = this.intern.email || '';
-        const prevRequiredHours = Number(this.intern.ojtRequiredHours) || 0;
         const response = await fetch(`http://localhost:3001/users/${this.intern.id}/info`, {
           method: 'PUT',
           headers: {
@@ -288,6 +335,13 @@ export default {
             phoneNumber: this.intern.phoneNumber || '',
             email: this.intern.email || '',
             ojtRequiredHours: Number(this.intern.ojtRequiredHours) || null,
+            address: this.intern.address || '',
+            gender: this.intern.gender || '',
+            dateOfBirth: this.intern.dateOfBirth || '',
+            course: this.intern.course || '',
+            yearLevel: this.intern.yearLevel || '',
+            startDate: this.intern.startDate || '',
+            endDate: this.intern.endDate || '',
           }),
         });
 
@@ -311,24 +365,13 @@ export default {
           }
         }
 
-        this.infoMessage = 'Information updated successfully.';
-        // Add more specific notifications for each changed field
-        const newSchool = this.intern.schoolOrUniversity || '';
-        const newPhone = this.intern.phoneNumber || '';
-        const newEmail = this.intern.email || '';
-        const newRequiredHours = Number(this.intern.ojtRequiredHours) || 0;
-        if (newSchool !== prevSchool) {
-          this.addLocalNotification('Your school information was updated.');
-        }
-        if (newPhone !== prevPhone) {
-          this.addLocalNotification('Your phone number was updated.');
-        }
-        if (newEmail !== prevEmail) {
-          this.addLocalNotification('Your email information was updated.');
-        }
-        if (newRequiredHours !== prevRequiredHours) {
-          this.addLocalNotification('Your OJT required hours were updated.');
-        }
+        this.infoMessage = 'Profile updated successfully!';
+        this.addLocalNotification('Your comprehensive profile information was updated.');
+        
+        setTimeout(() => {
+          this.infoMessage = null;
+        }, 4000);
+        
       } catch (err) {
         console.error('Error updating intern info:', err);
         this.infoError = err && err.message ? err.message : 'Failed to update information.';
@@ -498,19 +541,55 @@ export default {
   color: #6b7280;
 }
 
+/* Form styling specifically for updated grid layout */
 .profile-main {
   max-width: 900px;
   margin: 2rem auto;
-  padding: 0 1rem 2rem;
+  padding: 0 1rem 3rem;
+}
+
+.profile-form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.avatar-card {
+.card {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  padding: 2rem;
+  border: 1px solid #e2e8f0;
+}
+
+.section-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.section-header .note {
+  margin: 0.25rem 0 0 0;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+/* Avatar Row */
+.avatar-row {
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 0.75rem;
 }
 
 .avatar-wrapper {
@@ -520,17 +599,19 @@ export default {
 }
 
 .avatar {
-  width: 96px;
-  height: 96px;
-  border-radius: 999px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #e5e7eb;
-  color: #374151;
-  font-size: 1.8rem;
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 1.7rem;
   font-weight: 600;
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .avatar img {
@@ -539,14 +620,10 @@ export default {
   object-fit: cover;
 }
 
-.avatar.placeholder span {
-  line-height: 1;
-}
-
 .avatar-actions {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .avatar-upload-btn {
@@ -554,14 +631,20 @@ export default {
   align-items: center;
   justify-content: center;
   padding: 0.5rem 1rem;
-  border-radius: 999px;
-  background: #4b5563;
-  color: #e5e7eb;
-  font-size: 0.9rem;
+  border-radius: 0.5rem;
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  transition: background 0.2s;
+}
+
+.avatar-upload-btn:hover {
+  background: #e2e8f0;
 }
 
 .avatar-upload-btn input[type='file'] {
@@ -576,86 +659,128 @@ export default {
   cursor: not-allowed;
 }
 
-.card {
-  background: #ffffff;
-  border-radius: 1rem;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
-  padding: 1.5rem;
-}
-
-.info-card h2,
-.password-card h2 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  color: #0f172a;
-}
-
-.info-grid {
+/* Forms Grid */
+.form-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
 }
 
-.label {
-  display: block;
-  font-size: 0.8rem;
-  color: #6b7280;
-  margin-bottom: 0.2rem;
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-.password-form {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.75rem;
+.form-group.full-width {
+  grid-column: span 2;
 }
 
 .form-group label {
-  display: block;
-  margin-bottom: 0.3rem;
   font-size: 0.85rem;
-  color: #4b5563;
+  font-weight: 600;
+  color: #334155;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   width: 100%;
-  padding: 0.5rem 0.6rem;
+  padding: 0.6rem 0.75rem;
   border-radius: 0.5rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #cbd5e1;
   font-size: 0.9rem;
+  color: #0f172a;
+  background: #ffffff;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #94a3b8;
+}
+
+.readonly-input {
+  background: #f8fafc !important;
+  color: #64748b !important;
+  cursor: not-allowed;
+  border-color: #e2e8f0 !important;
+}
+
+/* Action Bar */
+.action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
 .btn-save {
-  margin-top: 0.5rem;
-  padding: 0.7rem 1.2rem;
-  border-radius: 999px;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
   border: none;
-  background: #4b5563;
-  color: #e5e7eb;
-  font-size: 0.9rem;
+  background: #f97316;
+  color: #ffffff;
+  font-size: 1rem;
   font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2);
+  transition: transform 0.1s, background 0.2s;
+}
+
+.btn-save:hover:not(:disabled) {
+  background: #ea580c;
+  transform: translateY(-1px);
+}
+
+.btn-save:disabled {
+  background: #cbd5e1;
+  color: #64748b;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .note {
-  font-size: 0.8rem;
-  color: #6b7280;
-  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
 }
 
 .error-note {
-  color: #b91c1c;
+  color: #ef4444;
+  font-weight: 500;
 }
 
-@media (max-width: 700px) {
-  .info-grid {
+.success-note {
+  color: #059669;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  background: #ecfdf5;
+  border-radius: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .form-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .form-group.full-width {
+    grid-column: span 1;
+  }
+  
+  .action-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .btn-save {
+    width: 100%;
   }
 }
 </style>

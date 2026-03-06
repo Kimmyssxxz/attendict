@@ -101,6 +101,30 @@
         </div>
 
         <div class="form-group">
+          <label for="schoolOrUniversity">School / University</label>
+          <input
+            id="schoolOrUniversity"
+            v-model="form.schoolOrUniversity"
+            type="text"
+            required
+            class="form-control"
+            placeholder="Enter school or university"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="ojtRequiredHours">OJT Required Hours</label>
+          <input
+            id="ojtRequiredHours"
+            v-model.number="form.ojtRequiredHours"
+            type="number"
+            min="0"
+            class="form-control"
+            placeholder="Enter required OJT hours (optional)"
+          />
+        </div>
+
+        <div class="form-group">
           <label for="password">Password</label>
           <input
             id="password"
@@ -147,6 +171,8 @@ export default {
         role: '',
         position: '',
         assignedOffice: '',
+        schoolOrUniversity: '',
+        ojtRequiredHours: null,
         password: '',
         confirmPassword: ''
       }
@@ -169,6 +195,12 @@ export default {
           role: this.form.role,
           position: this.form.position,
           assignedOffice: this.form.assignedOffice,
+          schoolOrUniversity: this.form.schoolOrUniversity || '',
+          ojtRequiredHours: this.form.ojtRequiredHours ?? null,
+          // Default attendance tagging fields so admin table shows Normal Hours
+          tagging: 'Normal Hours',
+          todayAmTag: 'Normal Hours',
+          todayPmTag: 'Normal Hours',
           password: this.form.password
         });
 

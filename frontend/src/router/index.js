@@ -2,8 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router';
 import RegisterView from '../views/RegisterView.vue';
 import LoginView from '../views/LoginView.vue';
 import AdminLoginView from '../views/admin/AdminLoginView.vue';
-import AdminDashboardView from '../views/admin/AdminDashboardView.vue';
 import AdminStudentInternsView from '../views/admin/AdminStudentInternsView.vue';
+import AdminStudentTaggingView from '../views/admin/AdminStudentTaggingView.vue';
+import AdminStudentCertificationView from '../views/admin/AdminStudentCertificationView.vue';
+import AdminStudentAttendanceValidationView from '../views/admin/AdminStudentAttendanceValidationView.vue';
+import AdminSettingsView from '../views/admin/AdminSettingsView.vue';
 import DashboardView from '../views/intern/DashboardView.vue';
 import TimeView from '../views/intern/TimeView.vue';
 import AttendanceView from '../views/intern/AttendanceView.vue';
@@ -11,6 +14,7 @@ import ProfileView from '../views/intern/ProfileView.vue';
 import SettingsView from '../views/intern/SettingsView.vue';
 import StaffDashboardView from '../views/staff/StaffDashboardView.vue';
 import NotificationsView from '../views/intern/NotificationsView.vue';
+import StaffStatusView from '../views/intern/StaffStatusView.vue';
 import ClientLogBook from '../views/client/ClientLogBook.vue';
 import ClientEvaluation from '../views/client/ClientEvaluation.vue';
 
@@ -36,6 +40,11 @@ const routes = [
     component: AttendanceView
   },
   {
+    path: '/intern/staff-status',
+    name: 'InternStaffStatus',
+    component: StaffStatusView
+  },
+  {
     path: '/intern/notifications',
     name: 'InternNotifications',
     component: NotificationsView
@@ -56,14 +65,29 @@ const routes = [
     component: StaffDashboardView,
   },
   {
-    path: '/admin/dashboard',
-    name: 'AdminDashboard',
-    component: AdminDashboardView,
-  },
-  {
-    path: '/admin/interns',
+    path: '/admin/manage-interns',
     name: 'AdminStudentInterns',
     component: AdminStudentInternsView,
+  },
+  {
+    path: '/admin/student-tagging',
+    name: 'AdminStudentTagging',
+    component: AdminStudentTaggingView,
+  },
+  {
+    path: '/admin/student-certification',
+    name: 'AdminStudentCertification',
+    component: AdminStudentCertificationView,
+  },
+  {
+    path: '/admin/student-attendance-validation',
+    name: 'AdminStudentAttendanceValidation',
+    component: AdminStudentAttendanceValidationView,
+  },
+  {
+    path: '/admin/settings',
+    name: 'AdminSettings',
+    component: AdminSettingsView,
   },
   {
     path: '/auth/admin/login',

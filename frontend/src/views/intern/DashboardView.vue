@@ -7,6 +7,7 @@
           <router-link to="/intern/dashboard">Dashboard</router-link>
           <router-link to="/intern/time">Time In / Out</router-link>
           <router-link to="/intern/attendance">My Attendance</router-link>
+          <router-link to="/intern/staff-status">Staff Status</router-link>
           <router-link to="/intern/notifications">Notifications</router-link>
           <router-link to="/intern/profile">Profile</router-link>
           <router-link to="/intern/settings">Settings</router-link>
@@ -56,12 +57,18 @@
               <span class="label">OJT Required Hours</span>
               <span class="value">{{ requiredHours }} hrs</span>
             </div>
+            <div>
+              <span class="label">OJT Remaining Hours</span>
+              <span class="value">{{ remainingHoursDisplay }}</span>
+            </div>
           </div>
 
           <div class="progress-section">
             <div class="progress-header">
               <span class="label">Completed Hours vs Required Hours</span>
-              <span class="progress-text">{{ completedHours }} / {{ requiredHours }} hrs ({{ progressPercent }}%)</span>
+              <span class="progress-text">
+                Remaining: {{ remainingHoursDisplay }} ({{ progressPercent }}%)
+              </span>
             </div>
             <div class="progress-bar">
               <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
@@ -74,22 +81,12 @@
             <h3>Weekly Rendered Hours</h3>
             <span class="chip">This week</span>
           </div>
-          <div class="simple-bar-chart">
-            <div
-              v-for="(day, index) in weeklyRenderedHours"
-              :key="day.label + index"
-              class="bar-item"
-            >
-              <div class="bar-wrapper">
-                <div
-                  class="bar"
-                  :style="{ height: day.percent + '%' }"
-                ></div>
-              </div>
-              <span class="bar-label">{{ day.label }}</span>
-              <span class="bar-value">{{ day.hours }}h</span>
-            </div>
-          </div>
+          <apexchart
+            type="area"
+            height="300"
+            :options="chartOptions"
+            :series="chartSeries"
+          ></apexchart>
         </div>
 
         <div class="card analytics-card">
@@ -137,35 +134,25 @@
             <h3>Monthly Attendance</h3>
             <span class="chip">{{ monthlyAttendance.monthLabel }}</span>
           </div>
-          <div class="simple-line-chart">
-            <div class="line-chart-grid">
-              <div
-                v-for="(week, index) in monthlyAttendance.weeks"
-                :key="week.label + index"
-                class="line-point-group"
-              >
-                <div class="line-point-wrapper">
-                  <div
-                    class="line-point"
-                    :style="{ height: week.percent + '%' }"
-                  ></div>
-                </div>
-                <span class="bar-label">{{ week.label }}</span>
-                <span class="bar-value">{{ week.daysPresent }} days</span>
-              </div>
-            </div>
-            <p class="chart-hint">Approximate visualization only. Detailed records are in the Attendance page.</p>
-          </div>
+          <apexchart
+            type="bar"
+            height="300"
+            :options="monthlyChartOptions"
+            :series="monthlyChartSeries"
+          ></apexchart>
         </div>
 
         <div class="card calendar-card">
           <div class="card-title-row">
             <h3>Calendar View</h3>
-            <span class="chip">{{ calendarMonthLabel }}</span>
+            <div class="calendar-nav">
+              <button class="calendar-nav-btn" @click="prevMonth">&lt;</button>
+              <span class="chip">{{ calendarMonthLabel }}</span>
+              <button class="calendar-nav-btn" @click="nextMonth">&gt;</button>
+            </div>
           </div>
           <div class="calendar-legend">
             <span class="legend-item"><span class="legend-dot legend-present"></span>Present</span>
-            <span class="legend-item"><span class="legend-dot legend-absent"></span>Absent</span>
             <span class="legend-item"><span class="legend-dot legend-holiday"></span>Holiday</span>
             <span class="legend-item"><span class="legend-dot legend-weekend"></span>Weekend (Sunday)</span>
           </div>
@@ -181,7 +168,6 @@
               :class="[
                 day.isCurrentMonth ? 'calendar-day--current-month' : 'calendar-day--other-month',
                 day.status === 'present' ? 'calendar-day--present' : '',
-                day.status === 'absent' ? 'calendar-day--absent' : '',
                 day.status === 'holiday' ? 'calendar-day--holiday' : '',
                 day.isWeekend && day.status === 'none' ? 'calendar-day--weekend' : '',
                 day.isToday ? 'calendar-day--today' : ''
@@ -214,8 +200,13 @@
 </template>
 
 <script>
+import VueApexCharts from 'vue3-apexcharts';
+
 export default {
   name: 'InternDashboardView',
+  components: {
+    apexchart: VueApexCharts,
+  },
   data() {
     return {
       studentName: '',
@@ -223,22 +214,63 @@ export default {
       assignedOffice: '',
       requiredHours: 0,
       completedHours: 0,
-      weeklyRenderedHours: [
-        { label: 'Mon', hours: 0, percent: 0 },
-        { label: 'Tue', hours: 0, percent: 0 },
-        { label: 'Wed', hours: 0, percent: 0 },
-        { label: 'Thu', hours: 0, percent: 0 },
-        { label: 'Fri', hours: 0, percent: 0 },
+      remainingHours: null,
+      chartOptions: {
+        chart: {
+          type: 'area',
+          height: 300,
+          stacked: true,
+          toolbar: { show: false }
+        },
+        colors: ['#008FFB', '#00E396', '#CED4DC'],
+        dataLabels: { enabled: false },
+        stroke: { curve: 'monotoneCubic' },
+        fill: {
+          type: 'gradient',
+          gradient: {
+            opacityFrom: 0.6,
+            opacityTo: 0.8,
+          }
+        },
+        legend: { position: 'top', horizontalAlign: 'left' },
+        xaxis: { categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+      },
+      chartSeries: [
+        { name: 'Normal Hours', data: [0, 0, 0, 0, 0] },
+        { name: 'Overtime', data: [0, 0, 0, 0, 0] },
       ],
       monthlyAttendance: {
         monthLabel: '',
-        weeks: [
-          { label: 'W1', daysPresent: 0, percent: 0 },
-          { label: 'W2', daysPresent: 0, percent: 0 },
-          { label: 'W3', daysPresent: 0, percent: 0 },
-          { label: 'W4', daysPresent: 0, percent: 0 },
-        ],
       },
+      monthlyChartOptions: {
+        chart: {
+          type: 'bar',
+          height: 300,
+          toolbar: { show: false }
+        },
+        plotOptions: {
+          bar: {
+            borderRadius: 4,
+            columnWidth: '40%',
+          }
+        },
+        colors: ['#0284c7'],
+        dataLabels: { enabled: false },
+        xaxis: { categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4'] },
+        yaxis: {
+          title: { text: 'Days Present' },
+          min: 0,
+          max: 7,
+          tickAmount: 7,
+          labels: { formatter: (val) => Math.round(val) }
+        },
+        tooltip: {
+          y: { formatter: (val) => val + ' days' }
+        }
+      },
+      monthlyChartSeries: [
+        { name: 'Days Present', data: [0, 0, 0, 0] }
+      ],
       averageTimeIn: '--:--',
       averageWorkingHoursPerDay: 0,
       attendanceRate: 0,
@@ -256,6 +288,7 @@ export default {
       calendarSelectedDate: null,
       calendarSelectedDetails: null,
       attendanceByDate: {},
+      currentCalendarDate: new Date(),
     }
   },
   created() {
@@ -296,6 +329,14 @@ export default {
       const clamped = Math.max(0, Math.min(raw, 100));
       return Math.round(clamped);
     },
+    remainingHoursDisplay() {
+      const v = this.remainingHours;
+      if (v == null || !Number.isFinite(v)) return '-';
+      const totalMinutes = Math.round(v * 60);
+      const h = Math.floor(totalMinutes / 60);
+      const m = totalMinutes % 60;
+      return `${h}h ${m}m`;
+    },
     calendarWeeksFlat() {
       return this.calendarWeeks.reduce((all, week) => all.concat(week.days), []);
     },
@@ -327,6 +368,10 @@ export default {
         const rawRequired = user.requiredHours || user.ojtRequiredHours || basicUser.requiredHours || basicUser.ojtRequiredHours;
         const parsedRequired = Number(rawRequired);
         this.requiredHours = Number.isFinite(parsedRequired) && parsedRequired > 0 ? parsedRequired : 486;
+
+        const rawRemaining = user.ojtRemainingHours;
+        const parsedRemaining = Number(rawRemaining);
+        this.remainingHours = Number.isFinite(parsedRemaining) && parsedRemaining >= 0 ? parsedRemaining : null;
 
         try {
           const attRes = await fetch(`http://localhost:3001/attendance/intern/history?internId=${encodeURIComponent(internId)}`);
@@ -363,16 +408,16 @@ export default {
     updateAttendanceAnalytics(records) {
       if (!Array.isArray(records) || !records.length) {
         this.completedHours = 0;
-        this.weeklyRenderedHours = this.weeklyRenderedHours.map(d => ({ ...d, hours: 0, percent: 0 }));
+        this.chartSeries = [
+          { name: 'Normal Hours', data: [0, 0, 0, 0, 0] },
+          { name: 'Overtime', data: [0, 0, 0, 0, 0] },
+        ];
         this.monthlyAttendance = {
           monthLabel: '',
-          weeks: [
-            { label: 'W1', daysPresent: 0, percent: 0 },
-            { label: 'W2', daysPresent: 0, percent: 0 },
-            { label: 'W3', daysPresent: 0, percent: 0 },
-            { label: 'W4', daysPresent: 0, percent: 0 },
-          ],
         };
+        this.monthlyChartSeries = [
+          { name: 'Days Present', data: [0, 0, 0, 0] }
+        ];
         this.averageTimeIn = '--:--';
         this.averageWorkingHoursPerDay = 0;
         this.attendanceRate = 0;
@@ -401,27 +446,54 @@ export default {
         const totalMinutesPM = typeof r.totalMinutesPM === 'number' ? r.totalMinutesPM : null;
         const totalMinutesFallback = typeof r.totalMinutes === 'number' ? r.totalMinutes : null;
 
-        let dayMinutes = 0;
+        const tag = (r.tagAM || r.tagPM || r.tagging || 'Normal Hours').trim();
+        const eightHoursMinutes = 8 * 60;
+
+        let rawTotal = 0;
         if (totalMinutesAM != null || totalMinutesPM != null) {
-          dayMinutes = (totalMinutesAM || 0) + (totalMinutesPM || 0);
+          rawTotal = (totalMinutesAM || 0) + (totalMinutesPM || 0);
         } else if (totalMinutesFallback != null) {
-          dayMinutes = totalMinutesFallback;
+          rawTotal = totalMinutesFallback;
         } else if (typeof r.totalHours === 'number' || typeof r.totalHours === 'string') {
           const h = parseFloat(r.totalHours);
           if (Number.isFinite(h) && h > 0) {
-            dayMinutes = Math.round(h * 60);
+            rawTotal = Math.round(h * 60);
           }
         }
 
-        totalMinutesAll += Math.max(0, dayMinutes);
+        let dayMinutes = 0;
+        if (tag === 'Overtime') {
+          if (typeof r.overtimeMinutes === 'number') {
+            dayMinutes = Math.max(0, r.overtimeMinutes);
+          } else {
+            dayMinutes = Math.max(0, rawTotal - eightHoursMinutes);
+          }
+        } else {
+          if (typeof r.normalCountMinutes === 'number') {
+            dayMinutes = Math.max(0, r.normalCountMinutes);
+          } else {
+            dayMinutes = Math.min(Math.max(0, rawTotal), eightHoursMinutes);
+          }
+        }
+
+        if (r.validationStatus === 'Approved') {
+          totalMinutesAll += dayMinutes;
+        }
 
         if (!byDate[dateStr]) {
           byDate[dateStr] = {
             minutes: 0,
+            normalMinutes: 0,
+            overtimeMinutes: 0,
             hasRecord: false,
           };
         }
-        byDate[dateStr].minutes += Math.max(0, dayMinutes);
+        byDate[dateStr].minutes += dayMinutes;
+        if (tag === 'Overtime') {
+          byDate[dateStr].overtimeMinutes += dayMinutes;
+        } else {
+          byDate[dateStr].normalMinutes += dayMinutes;
+        }
         byDate[dateStr].hasRecord = true;
 
         const timeIn = r.timeInAM || r.timeInPM;
@@ -478,26 +550,26 @@ export default {
       monday.setDate(today.getDate() + diffToMonday);
 
       const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-      const items = labels.map((label, index) => {
+      const normalData = [];
+      const overtimeData = [];
+
+      labels.forEach((label, index) => {
         const d = new Date(monday);
         d.setDate(monday.getDate() + index);
         const y = d.getFullYear();
         const m = (d.getMonth() + 1).toString().padStart(2, '0');
         const day = d.getDate().toString().padStart(2, '0');
         const key = `${y}-${m}-${day}`;
-        const info = byDate[key] || { minutes: 0 };
-        const hours = Math.max(0, info.minutes) / 60;
-        return { label, dateKey: key, hours };
+        const info = byDate[key] || { normalMinutes: 0, overtimeMinutes: 0 };
+        
+        normalData.push(Math.round((info.normalMinutes / 60) * 10) / 10);
+        overtimeData.push(Math.round((info.overtimeMinutes / 60) * 10) / 10);
       });
 
-      const maxHours = items.reduce((max, item) => Math.max(max, item.hours), 0);
-      const updated = items.map((item) => ({
-        label: item.label,
-        hours: Math.round(item.hours * 10) / 10,
-        percent: maxHours > 0 ? Math.round((item.hours / maxHours) * 100) : 0,
-      }));
-
-      this.weeklyRenderedHours = updated;
+      this.chartSeries = [
+        { name: 'Normal Hours', data: normalData },
+        { name: 'Overtime', data: overtimeData }
+      ];
     },
     updateMonthlyAttendance(byDate) {
       const today = new Date();
@@ -535,21 +607,32 @@ export default {
       });
 
       const maxDays = weeks.reduce((max, w) => Math.max(max, w.daysPresent), 0);
-      const normalizedWeeks = weeks.map((w) => ({
-        label: w.label,
-        daysPresent: w.daysPresent,
-        percent: maxDays > 0 ? Math.round((w.daysPresent / maxDays) * 100) : 0,
-      }));
+      
+      this.monthlyChartSeries = [
+        { name: 'Days Present', data: weeks.map(w => w.daysPresent) }
+      ];
 
       this.monthlyAttendance = {
         monthLabel,
-        weeks: normalizedWeeks,
       };
+    },
+    prevMonth() {
+      const d = new Date(this.currentCalendarDate);
+      d.setMonth(d.getMonth() - 1);
+      this.currentCalendarDate = d;
+      this.buildCalendar(this.attendanceByDate, this.attendanceByDate);
+    },
+    nextMonth() {
+      const d = new Date(this.currentCalendarDate);
+      d.setMonth(d.getMonth() + 1);
+      this.currentCalendarDate = d;
+      this.buildCalendar(this.attendanceByDate, this.attendanceByDate);
     },
     buildCalendar(byDate, rawMap) {
       const today = new Date();
-      const year = today.getFullYear();
-      const monthIndex = today.getMonth();
+      const calendarTarget = this.currentCalendarDate || today;
+      const year = calendarTarget.getFullYear();
+      const monthIndex = calendarTarget.getMonth();
       const firstOfMonth = new Date(year, monthIndex, 1);
       const startDayOfWeek = firstOfMonth.getDay();
       const calendarStart = new Date(year, monthIndex, 1 - startDayOfWeek);
@@ -578,14 +661,10 @@ export default {
               status = 'holiday';
             } else if (info.minutes > 0) {
               status = 'present';
-            } else if (!isFuture && !isSunday) {
-              status = 'absent';
             }
           } else if (!isFuture) {
             if (info.minutes > 0) {
               status = 'present';
-            } else if (!isSunday) {
-              status = 'absent';
             }
           }
 
@@ -602,10 +681,11 @@ export default {
       }
 
       this.calendarWeeks = weeks;
-      this.calendarMonthLabel = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      this.calendarMonthLabel = calendarTarget.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
+      // Only attempt to auto-select today if today is actually in the rendered month grid
       const todayEntry = weeks.flatMap((w) => w.days).find((day) => day.dateKey === nowDateKey);
-      if (todayEntry) {
+      if (todayEntry && calendarTarget.getMonth() === today.getMonth() && calendarTarget.getFullYear() === today.getFullYear()) {
         this.handleCalendarDayClick(todayEntry);
       } else {
         this.calendarSelectedDate = null;
@@ -619,13 +699,45 @@ export default {
 
       let statusLabel = 'No record';
       if (day.status === 'present') statusLabel = 'Present';
-      else if (day.status === 'absent') statusLabel = 'Absent';
       else if (day.status === 'holiday') statusLabel = 'Holiday';
 
       let totalHours = 0;
       if (rec) {
-        const totalMinutes = (rec.totalMinutesAM || 0) + (rec.totalMinutesPM || 0) || rec.totalMinutes || 0;
-        totalHours = Math.round((Math.max(0, totalMinutes) / 60) * 10) / 10;
+        const tag = (rec.tagAM || rec.tagPM || rec.tagging || 'Normal Hours').trim();
+        const eightHoursMinutes = 8 * 60;
+
+        const totalMinutesAM = typeof rec.totalMinutesAM === 'number' ? rec.totalMinutesAM : null;
+        const totalMinutesPM = typeof rec.totalMinutesPM === 'number' ? rec.totalMinutesPM : null;
+        const totalMinutesFallback = typeof rec.totalMinutes === 'number' ? rec.totalMinutes : null;
+
+        let rawTotal = 0;
+        if (totalMinutesAM != null || totalMinutesPM != null) {
+          rawTotal = (totalMinutesAM || 0) + (totalMinutesPM || 0);
+        } else if (totalMinutesFallback != null) {
+          rawTotal = totalMinutesFallback;
+        } else if (typeof rec.totalHours === 'number' || typeof rec.totalHours === 'string') {
+          const h = parseFloat(rec.totalHours);
+          if (Number.isFinite(h) && h > 0) {
+            rawTotal = Math.round(h * 60);
+          }
+        }
+
+        let dayMinutes = 0;
+        if (tag === 'Overtime') {
+          if (typeof rec.overtimeMinutes === 'number') {
+            dayMinutes = Math.max(0, rec.overtimeMinutes);
+          } else {
+            dayMinutes = Math.max(0, rawTotal - eightHoursMinutes);
+          }
+        } else {
+          if (typeof rec.normalCountMinutes === 'number') {
+            dayMinutes = Math.max(0, rec.normalCountMinutes);
+          } else {
+            dayMinutes = Math.min(Math.max(0, rawTotal), eightHoursMinutes);
+          }
+        }
+
+        totalHours = Math.round((dayMinutes / 60) * 10) / 10;
       }
 
       this.calendarSelectedDetails = {
@@ -1158,10 +1270,6 @@ export default {
   background: #eab308;
 }
 
-.legend-absent {
-  background: #ef4444;
-}
-
 .legend-holiday {
   background: #3b82f6;
 }
@@ -1209,11 +1317,6 @@ export default {
   color: #854d0e;
 }
 
-.calendar-day--absent {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
 .calendar-day--holiday {
   background: #dbeafe;
   color: #1d4ed8;
@@ -1257,89 +1360,34 @@ export default {
   align-items: center;
 }
 
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.calendar-nav-btn {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.calendar-nav-btn:hover {
+  background: #e5e7eb;
+}
+
 .chip {
   font-size: 0.75rem;
   padding: 0.2rem 0.6rem;
   border-radius: 999px;
   background: #eff6ff;
   color: #1d4ed8;
-}
-
-.simple-bar-chart {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.75rem;
-  align-items: end;
-}
-
-.bar-item {
-  text-align: center;
-}
-
-.bar-wrapper {
-  height: 120px;
-  background: #f3f4f6;
-  border-radius: 999px;
-  padding: 4px;
-  display: flex;
-  align-items: flex-end;
-}
-
-.bar {
-  width: 100%;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #f97316, #ea580c);
-}
-
-.bar-label {
-  display: block;
-  margin-top: 0.35rem;
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.bar-value {
-  display: block;
-  font-size: 0.75rem;
-  color: #111827;
-}
-
-.simple-line-chart {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.line-chart-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.75rem;
-  align-items: end;
-}
-
-.line-point-group {
-  text-align: center;
-}
-
-.line-point-wrapper {
-  height: 120px;
-  border-radius: 999px;
-  padding: 4px;
-  background: #f3f4f6;
-  display: flex;
-  align-items: flex-end;
-}
-
-.line-point {
-  width: 100%;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #38bdf8, #0284c7);
-}
-
-.chart-hint {
-  margin: 0;
-  font-size: 0.75rem;
-  color: #6b7280;
 }
 
 .analytics-card h3 {

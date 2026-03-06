@@ -7,6 +7,7 @@
           <router-link to="/intern/dashboard">Dashboard</router-link>
           <router-link to="/intern/time">Time In / Out</router-link>
           <router-link to="/intern/attendance">My Attendance</router-link>
+          <router-link to="/intern/staff-status">Staff Status</router-link>
           <router-link to="/intern/notifications">Notifications</router-link>
           <router-link to="/intern/profile">Profile</router-link>
           <router-link to="/intern/settings">Settings</router-link>
@@ -46,7 +47,23 @@
           <li v-for="(n, idx) in notifications" :key="idx" class="notif-item">
             <label class="notif-row">
               <input type="checkbox" v-model="selectedIndexes" :value="idx" />
-              <span class="notif-text">{{ n }}</span>
+              <span class="notif-text">
+                <span class="notif-message">{{ n.message || n }}</span>
+                <span
+                  v-if="n.metadata && (n.metadata.timeInLocation || n.metadata.timeOutLocation || n.metadata.location)"
+                  class="notif-location"
+                >
+                  <span v-if="n.metadata.timeInLocation">
+                    Time In Location: {{ formatLocation(n.metadata.timeInLocation) }}
+                  </span>
+                  <span v-if="n.metadata.timeOutLocation">
+                    Time Out Location: {{ formatLocation(n.metadata.timeOutLocation) }}
+                  </span>
+                  <span v-else-if="!n.metadata.timeInLocation && !n.metadata.timeOutLocation && n.metadata.location">
+                    Location: {{ n.metadata.location }}
+                  </span>
+                </span>
+              </span>
             </label>
           </li>
         </ul>
@@ -81,7 +98,7 @@ export default {
         .then((res) => res.json())
         .then((data) => {
           if (data && Array.isArray(data.notifications)) {
-            this.notifications = data.notifications.map((n) => n.message || '');
+            this.notifications = data.notifications;
           }
         })
         .catch(() => {
@@ -92,7 +109,12 @@ export default {
             if (!raw) return;
             const list = JSON.parse(raw);
             if (Array.isArray(list)) {
-              this.notifications = list;
+              // Support old string-only format from localStorage
+              this.notifications = list.map((item) => (
+                typeof item === 'string'
+                  ? { message: item }
+                  : item
+              ));
             }
           } catch (e) {}
         });
@@ -110,6 +132,14 @@ export default {
     }
   },
   methods: {
+    formatLocation(value) {
+      if (!value) return ''
+      if (typeof value === 'string') return value
+      if (typeof value.address === 'string' && value.address.trim() !== '') {
+        return value.address
+      }
+      return ''
+    },
     toggleNotifications() {
       this.showNotifications = !this.showNotifications
     },
@@ -146,7 +176,11 @@ export default {
 
       // Collect messages to delete based on selected indexes
       const messagesToDelete = this.selectedIndexes
-        .map((i) => this.notifications[i])
+        .map((i) => {
+          const n = this.notifications[i];
+          if (!n) return null;
+          return typeof n === 'string' ? n : n.message;
+        })
         .filter((v) => typeof v === 'string');
 
       // Call backend to delete matching notifications in Firestore

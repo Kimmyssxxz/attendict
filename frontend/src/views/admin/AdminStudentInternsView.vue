@@ -1,11 +1,14 @@
 <template>
-  <div class="admin-layout">
-    <header class="admin-header">
-      <h1>Student Intern Management</h1>
-    </header>
+  <div class="admin-shell">
+    <AdminSidebar />
 
-    <main class="admin-main">
-      <section class="section">
+    <div class="admin-layout">
+      <header class="admin-header">
+        <h1>Student Intern Management</h1>
+      </header>
+
+      <main class="admin-main">
+        <section class="section">
         <div class="section-header">
           <h2 class="section-title">Student Interns</h2>
           <p class="section-subtitle">
@@ -44,6 +47,13 @@
                 <th>Assigned Office</th>
                 <th>School / University</th>
                 <th>OJT Required Hours</th>
+                <th>Address</th>
+                <th>Gender</th>
+                <th>Date of Birth</th>
+                <th>Course / Program</th>
+                <th>Year Level</th>
+                <th>Start Date</th>
+                <th>End Date</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -58,6 +68,13 @@
                 <td>{{ intern.assignedOffice || '-' }}</td>
                 <td>{{ intern.schoolOrUniversity || '-' }}</td>
                 <td>{{ intern.ojtRequiredHours ?? '-' }}</td>
+                <td>{{ intern.address || '-' }}</td>
+                <td>{{ intern.gender || '-' }}</td>
+                <td>{{ intern.dateOfBirth || '-' }}</td>
+                <td>{{ intern.course || '-' }}</td>
+                <td>{{ intern.yearLevel || '-' }}</td>
+                <td>{{ intern.startDate || '-' }}</td>
+                <td>{{ intern.endDate || '-' }}</td>
                 <td>
                   <div class="action-buttons">
                     <button
@@ -139,6 +156,55 @@
                   <label>OJT Required Hours</label>
                   <input v-model.number="newIntern.ojtRequiredHours" type="number" min="0" />
                 </div>
+
+                <div class="form-group">
+                  <label>Address</label>
+                  <input v-model="newIntern.address" type="text" />
+                </div>
+
+                <div class="form-group">
+                  <label>Gender</label>
+                  <select v-model="newIntern.gender">
+                    <option value="" disabled>Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Date of Birth</label>
+                  <input v-model="newIntern.dateOfBirth" type="date" />
+                </div>
+
+                <div class="form-group">
+                  <label>Course / Program</label>
+                  <input v-model="newIntern.course" type="text" />
+                </div>
+
+                <div class="form-group">
+                  <label>Year Level</label>
+                  <select v-model="newIntern.yearLevel">
+                    <option value="" disabled>Select Year Level</option>
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                    <option value="5th Year">5th Year</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Start Date</label>
+                  <input v-model="newIntern.startDate" type="date" />
+                </div>
+
+                <div class="form-group">
+                  <label>End Date</label>
+                  <input v-model="newIntern.endDate" type="date" />
+                </div>
+
               </div>
 
               <div class="modal-actions">
@@ -201,6 +267,55 @@
                   <label>OJT Required Hours</label>
                   <input v-model.number="selectedIntern.ojtRequiredHours" type="number" min="0" :disabled="viewEditMode === 'view'" />
                 </div>
+
+                <div class="form-group">
+                  <label>Address</label>
+                  <input v-model="selectedIntern.address" type="text" :disabled="viewEditMode === 'view'" />
+                </div>
+
+                <div class="form-group">
+                  <label>Gender</label>
+                  <select v-model="selectedIntern.gender" :disabled="viewEditMode === 'view'">
+                    <option value="" disabled>Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Date of Birth</label>
+                  <input v-model="selectedIntern.dateOfBirth" type="date" :disabled="viewEditMode === 'view'" />
+                </div>
+
+                <div class="form-group">
+                  <label>Course / Program</label>
+                  <input v-model="selectedIntern.course" type="text" :disabled="viewEditMode === 'view'" />
+                </div>
+
+                <div class="form-group">
+                  <label>Year Level</label>
+                  <select v-model="selectedIntern.yearLevel" :disabled="viewEditMode === 'view'">
+                    <option value="" disabled>Select Year Level</option>
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                    <option value="5th Year">5th Year</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Start Date</label>
+                  <input v-model="selectedIntern.startDate" type="date" :disabled="viewEditMode === 'view'" />
+                </div>
+
+                <div class="form-group">
+                  <label>End Date</label>
+                  <input v-model="selectedIntern.endDate" type="date" :disabled="viewEditMode === 'view'" />
+                </div>
+                
               </div>
 
               <div class="modal-actions">
@@ -219,17 +334,22 @@
             </form>
           </div>
         </div>
-      </section>
-    </main>
+        </section>
+      </main>
+    </div>
   </div>
 </template>
 
 <script>
 import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { db } from '../../firebase'
+import AdminSidebar from './AdminSidebar.vue'
 
 export default {
   name: 'AdminStudentInternsView',
+  components: {
+    AdminSidebar,
+  },
   data() {
     return {
       interns: [],
@@ -248,6 +368,13 @@ export default {
         assignedOffice: '',
         schoolOrUniversity: '',
         ojtRequiredHours: null,
+        address: '',
+        gender: '',
+        dateOfBirth: '',
+        course: '',
+        yearLevel: '',
+        startDate: '',
+        endDate: '',
       },
       showViewEditModal: false,
       viewEditMode: 'view',
@@ -329,6 +456,13 @@ export default {
           assignedOffice: this.newIntern.assignedOffice || '',
           schoolOrUniversity: this.newIntern.schoolOrUniversity || '',
           ojtRequiredHours: this.newIntern.ojtRequiredHours ?? null,
+          address: this.newIntern.address || '',
+          gender: this.newIntern.gender || '',
+          dateOfBirth: this.newIntern.dateOfBirth || '',
+          course: this.newIntern.course || '',
+          yearLevel: this.newIntern.yearLevel || '',
+          startDate: this.newIntern.startDate || '',
+          endDate: this.newIntern.endDate || '',
           role: 'student',
           position: 'intern',
         }
@@ -345,6 +479,13 @@ export default {
           assignedOffice: '',
           schoolOrUniversity: '',
           ojtRequiredHours: null,
+          address: '',
+          gender: '',
+          dateOfBirth: '',
+          course: '',
+          yearLevel: '',
+          startDate: '',
+          endDate: '',
         }
 
         this.showAddModal = false
@@ -387,12 +528,21 @@ export default {
           assignedOffice: this.selectedIntern.assignedOffice || '',
           schoolOrUniversity: this.selectedIntern.schoolOrUniversity || '',
           ojtRequiredHours: this.selectedIntern.ojtRequiredHours ?? null,
+          address: this.selectedIntern.address || '',
+          gender: this.selectedIntern.gender || '',
+          dateOfBirth: this.selectedIntern.dateOfBirth || '',
+          course: this.selectedIntern.course || '',
+          yearLevel: this.selectedIntern.yearLevel || '',
+          startDate: this.selectedIntern.startDate || '',
+          endDate: this.selectedIntern.endDate || '',
         }
 
         await updateDoc(internRef, payload)
 
         this.showViewEditModal = false
         this.selectedIntern = null
+
+        // Refresh list so AM Tag / PM Tag columns show latest values from Firestore
         await this.fetchInterns()
       } catch (err) {
         console.error('Error updating intern:', err)
@@ -422,11 +572,16 @@ export default {
 </script>
 
 <style scoped>
-.admin-layout {
+.admin-shell {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
   background-color: #f5f5f5;
+}
+
+.admin-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .admin-header {
@@ -564,6 +719,15 @@ export default {
   font-size: 0.9rem;
 }
 
+.modal .form-group select {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  background-color: #fff;
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -621,5 +785,11 @@ export default {
 
 .action-button.danger:hover {
   background-color: #ffcdd2;
+}
+
+@media (max-width: 900px) {
+  .admin-shell {
+    flex-direction: column;
+  }
 }
 </style>
