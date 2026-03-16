@@ -37,36 +37,59 @@ export default {
   data() {
     return {
       username: '',
-      password: ''
-    }
+      password: '',
+    };
   },
   methods: {
     async handleLogin() {
       try {
-        const response = await fetch('http://localhost:3000/auth/intern/login', {
+        const response = await fetch('http://localhost:3001/auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             username: this.username,
-            password: this.password
-          })
+            password: this.password,
+          }),
         });
-        
+
         if (!response.ok) {
-          throw new Error('Login failed');
+          let details = '';
+          try {
+            const errData = await response.json();
+            details = errData?.message ? ` - ${errData.message}` : '';
+          } catch {
+            // ignore
+          }
+          throw new Error(`Login failed (${response.status})${details}`);
         }
-        
+
         const data = await response.json();
-        console.log('Login successful:', data);
+        const user = data.user;
+
+        if (!user || !user.role) {
+          throw new Error('Invalid login response');
+        }
+
+        if (user.role === 'student') {
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('internUser', JSON.stringify(user));
+          this.$router.push({ name: 'InternDashboard' });
+        } else if (user.role === 'staff') {
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('staffUser', JSON.stringify(user));
+          this.$router.push({ name: 'StaffDashboard' });
+        } else {
+          throw new Error('This login page is only for intern and staff accounts.');
+        }
       } catch (error) {
         console.error('Login error:', error);
-        alert('Login failed. Please check your credentials.');
+        alert(error?.message || 'Login failed. Please check your credentials.');
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>

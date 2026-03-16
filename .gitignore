@@ -37,3 +37,6 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# Firebase credentials
+backend/config/serviceAccountKey.json
