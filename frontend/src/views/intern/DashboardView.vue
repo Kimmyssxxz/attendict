@@ -21,7 +21,7 @@
           <div v-if="showNotifications" class="absolute right-0 mt-2 bg-white text-slate-900 min-w-[220px] rounded-xl shadow-[0_10px_25px_rgba(15,23,42,0.25)] p-3 z-20" @click.stop>
             <h3 class="m-0 mb-2 text-sm font-semibold">Notifications</h3>
             <ul v-if="notifications.length" class="list-none p-0 m-0 text-[0.85rem]">
-              <li v-for="(n, idx) in notifications" :key="idx" class="mt-1 first:mt-0">{{ n }}</li>
+              <li v-for="(n, idx) in notifications" :key="idx" class="mt-1 first:mt-0 border-b border-slate-100 pb-2 last:border-0 last:pb-0">{{ n.message || n }}</li>
             </ul>
             <p v-else class="m-0 text-[0.8rem] text-gray-500">No notifications</p>
           </div>
@@ -444,41 +444,32 @@ export default {
 
         const totalMinutesAM = typeof r.totalMinutesAM === 'number' ? r.totalMinutesAM : null;
         const totalMinutesPM = typeof r.totalMinutesPM === 'number' ? r.totalMinutesPM : null;
-        const totalMinutesFallback = typeof r.totalMinutes === 'number' ? r.totalMinutes : null;
 
-        const tag = (r.tagAM || r.tagPM || r.tagging || 'Normal Hours').trim();
-        const eightHoursMinutes = 8 * 60;
+        const tagAM = (r.tagAM || r.tagging || 'Normal Hours').trim();
+        const tagPM = (r.tagPM || r.tagging || 'Normal Hours').trim();
+        const fourHoursMinutes = 4 * 60;
 
-        let rawTotal = 0;
-        if (totalMinutesAM != null || totalMinutesPM != null) {
-          rawTotal = (totalMinutesAM || 0) + (totalMinutesPM || 0);
-        } else if (totalMinutesFallback != null) {
-          rawTotal = totalMinutesFallback;
-        } else if (typeof r.totalHours === 'number' || typeof r.totalHours === 'string') {
-          const h = parseFloat(r.totalHours);
-          if (Number.isFinite(h) && h > 0) {
-            rawTotal = Math.round(h * 60);
-          }
-        }
+        let countedAM = 0;
+        let countedPM = 0;
 
-        let dayMinutes = 0;
-        if (tag === 'Overtime') {
-          if (typeof r.overtimeMinutes === 'number') {
-            dayMinutes = Math.max(0, r.overtimeMinutes);
+        if (r.validationStatusAM === 'Approved' && (r.timeInAM || r.timeOutAM)) {
+          if (tagAM === 'Overtime') {
+            countedAM = Math.max(0, totalMinutesAM || 0);
           } else {
-            dayMinutes = Math.max(0, rawTotal - eightHoursMinutes);
-          }
-        } else {
-          if (typeof r.normalCountMinutes === 'number') {
-            dayMinutes = Math.max(0, r.normalCountMinutes);
-          } else {
-            dayMinutes = Math.min(Math.max(0, rawTotal), eightHoursMinutes);
+            countedAM = Math.min(Math.max(0, totalMinutesAM || 0), fourHoursMinutes);
           }
         }
 
-        if (r.validationStatus === 'Approved') {
-          totalMinutesAll += dayMinutes;
+        if (r.validationStatusPM === 'Approved' && (r.timeInPM || r.timeOutPM)) {
+          if (tagPM === 'Overtime') {
+            countedPM = Math.max(0, totalMinutesPM || 0);
+          } else {
+            countedPM = Math.min(Math.max(0, totalMinutesPM || 0), fourHoursMinutes);
+          }
         }
+
+        const dayMinutes = countedAM + countedPM;
+        totalMinutesAll += dayMinutes;
 
         if (!byDate[dateStr]) {
           byDate[dateStr] = {
@@ -488,11 +479,23 @@ export default {
             hasRecord: false,
           };
         }
+        
         byDate[dateStr].minutes += dayMinutes;
-        if (tag === 'Overtime') {
-          byDate[dateStr].overtimeMinutes += dayMinutes;
-        } else {
-          byDate[dateStr].normalMinutes += dayMinutes;
+        
+        if (r.validationStatusAM === 'Approved' && (r.timeInAM || r.timeOutAM)) {
+          if (tagAM === 'Overtime') {
+            byDate[dateStr].overtimeMinutes += countedAM;
+          } else {
+            byDate[dateStr].normalMinutes += countedAM;
+          }
+        }
+        
+        if (r.validationStatusPM === 'Approved' && (r.timeInPM || r.timeOutPM)) {
+          if (tagPM === 'Overtime') {
+            byDate[dateStr].overtimeMinutes += countedPM;
+          } else {
+            byDate[dateStr].normalMinutes += countedPM;
+          }
         }
         byDate[dateStr].hasRecord = true;
 
@@ -505,6 +508,9 @@ export default {
 
       const completedHoursRaw = totalMinutesAll / 60;
       this.completedHours = Math.round(completedHoursRaw * 10) / 10;
+      
+      // Update the remaining hours here to reflect real-time calculations from history
+      this.remainingHours = Math.max(0, this.requiredHours - this.completedHours);
 
       this.updateWeeklyRenderedHours(byDate);
       this.updateMonthlyAttendance(byDate);

@@ -166,13 +166,55 @@ export default {
       if (mod10 === 3 && mod100 !== 13) return `${d}rd`
       return `${d}th`
     },
-    generateCertificate(intern) {
-      const doc = new jsPDF({ unit: 'pt', format: 'letter' })
+    loadImage(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => resolve(img)
+        img.onerror = (e) => reject(e)
+        img.src = url
+      })
+    },
+    async generateCertificate(intern) {
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'letter' })
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const pageHeight = doc.internal.pageSize.getHeight()
+
+      // Professional Elegant Borders
+      // Outer Navy Blue Border
+      doc.setDrawColor(15, 30, 84) // Navy Blue
+      doc.setLineWidth(8)
+      doc.rect(20, 20, pageWidth - 40, pageHeight - 40)
+
+      // Inner Gold Border
+      doc.setDrawColor(212, 175, 55) // Gold
+      doc.setLineWidth(2)
+      doc.rect(32, 32, pageWidth - 64, pageHeight - 64)
+
+      // Inner Thin Navy Blue Border
+      doc.setDrawColor(15, 30, 84)
+      doc.setLineWidth(1)
+      doc.rect(36, 36, pageWidth - 72, pageHeight - 72)
+
+      // Background accent (very light gray/yellow in the center)
+      doc.setFillColor(252, 252, 250)
+      doc.rect(37, 37, pageWidth - 74, pageHeight - 74, 'F')
+
+      // Load logos
+      try {
+        const logo1 = await this.loadImage('/dictlogo2.png')
+        const logo2 = await this.loadImage('/Bagongpilipinas.png')
+        
+        // DICT Logo (Left) - Moved closer to edge
+        doc.addImage(logo1, 'PNG', 50, 55, 65, 65)
+        // Bagong Pilipinas Logo (Right) - Moved closer to edge
+        doc.addImage(logo2, 'PNG', pageWidth - 115, 55, 65, 65)
+      } catch (err) {
+        console.error('Could not load logos for certificate', err)
+      }
 
       const internName = this.formatName(intern) || intern.username || 'Intern'
-
-      const totalHoursLabel = intern.ojtTotalHoursLabel || intern.ojtTotalHours || ''
-      const hoursText = totalHoursLabel ? String(totalHoursLabel) : '[Number of Hours]'
+      const requiredHours = intern.ojtRequiredHours || ''
+      const hoursText = requiredHours ? String(requiredHours) : '[Number of Hours]'
 
       const now = new Date()
       const day = this.formatOrdinal(now.getDate())
@@ -180,57 +222,108 @@ export default {
       const year = now.getFullYear()
       const issuedText = `${day} of ${monthName}, ${year}`
 
-      const lines = [
-        'Republic of the Philippines',
-        'Department of Information and Communications Technology',
-        'Oriental Mindoro Provincial Office',
-        '',
-        'CERTIFICATE OF COMPLETION',
-        '',
-        'This is to certify that',
-        internName,
-        'has successfully completed his/her On-the-Job Training (OJT) at the Department of Information and Communications Technology – Oriental Mindoro Provincial Office.',
-        `He/She has rendered a total of ${hoursText} hours of service and has satisfactorily complied with all the requirements of the internship program.`,
-        'Throughout the training period, he/she demonstrated dedication, professionalism, and competence in performing assigned tasks and responsibilities in support of the office\'s programs and initiatives.',
-        `Issued this ${issuedText} at DICT Oriental Mindoro Provincial Office, Philippines.`,
-        '',
-        'ENGR. MARVIN D. BEJASA',
-        'OIC - Provincial Officer',
-        'Department of Information and Communications Technology',
-        'Oriental Mindoro Provincial Office',
-      ]
+      const centerText = (text, y, size, font = 'Times', style = 'normal', color = [0, 0, 0]) => {
+        doc.setFont(font, style)
+        doc.setFontSize(size)
+        doc.setTextColor(color[0], color[1], color[2])
+        const textWidth = doc.getTextWidth(text)
+        const x = (pageWidth - textWidth) / 2
+        doc.text(text, x, y)
+      }
 
-      const pageWidth = doc.internal.pageSize.getWidth()
-      let y = 80
-
-      doc.setFont('Times', 'Normal')
-      doc.setFontSize(12)
-
-      lines.forEach((line, index) => {
-        let fontSize = 12
-        let isTitle = false
-
-        if (index === 4) {
-          fontSize = 18
-          isTitle = true
-        } else if (index === 7) {
-          fontSize = 14
-        }
-
-        doc.setFontSize(fontSize)
-
-        const text = doc.splitTextToSize(line, pageWidth - 120)
-        text.forEach((part) => {
-          const textWidth = doc.getTextWidth(part)
-          const x = (pageWidth - textWidth) / 2
-          doc.text(part, x, y)
-          y += isTitle ? 28 : 18
+      const centerParagraph = (text, startY, size, lineHeight = 18) => {
+        doc.setFont('Times', 'normal')
+        doc.setFontSize(size)
+        doc.setTextColor(0, 0, 0)
+        let y = startY
+        const lines = doc.splitTextToSize(text, pageWidth - 160)
+        lines.forEach(l => {
+          const w = doc.getTextWidth(l)
+          doc.text(l, (pageWidth - w) / 2, y)
+          y += lineHeight
         })
+        return y
+      }
 
-        if (line === '') {
-          y += 4
-        }
-      })
+      let currentY = 70
+      centerText('Republic of the Philippines', currentY, 11)
+      currentY += 15
+      centerText('Department of Information and Communications Technology', currentY, 13, 'Times', 'bold')
+      currentY += 14
+      centerText('Oriental Mindoro Provincial Office', currentY, 11, 'Times', 'italic')
+
+      currentY += 50
+      centerText('CERTIFICATE OF COMPLETION', currentY, 34, 'Times', 'bold', [15, 30, 84]) // Navy Blue Title
+      
+      currentY += 35
+      centerText('This is to certify that', currentY, 16, 'Times', 'italic')
+      
+      currentY += 40
+      centerText(internName.toUpperCase(), currentY, 28, 'Times', 'bold')
+      
+      const nameWidth = doc.getTextWidth(internName.toUpperCase())
+      const nameX = (pageWidth - nameWidth) / 2
+      doc.setDrawColor(0, 0, 0)
+      doc.setLineWidth(1)
+      doc.line(nameX - 25, currentY + 8, nameX + nameWidth + 25, currentY + 8)
+
+      currentY += 40
+      
+      const p1 = `Has successfully completed his/her On-the-Job Training (OJT) at the Department of Information and Communications Technology – Oriental Mindoro Provincial Office.`
+      currentY = centerParagraph(p1, currentY, 14, 20)
+      
+      currentY += 10
+      const p2 = `He/She has rendered a total of ${hoursText} hours of service and has satisfactorily complied with all the requirements of the internship program.`
+      currentY = centerParagraph(p2, currentY, 14, 20)
+      
+      currentY += 10
+      const p3 = `Throughout the training period, he/she demonstrated dedication, professionalism, and competence in performing assigned tasks and responsibilities in support of the office's programs and initiatives.`
+      currentY = centerParagraph(p3, currentY, 14, 20)
+      
+      currentY += 30
+      centerText(`Issued this ${issuedText} at DICT Oriental Mindoro Provincial Office, Philippines.`, currentY, 12, 'Times', 'italic', [40, 40, 40])
+
+      currentY += 40
+      const sigX = pageWidth - 300
+      doc.setFont('Times', 'bold')
+      doc.setFontSize(14)
+      const sigName = 'ENGR. MARVIN D. BEJASA'
+      const sigWidth = doc.getTextWidth(sigName)
+      doc.text(sigName, sigX + (200 - sigWidth)/2, currentY) // Center within right block
+      
+      doc.setDrawColor(0, 0, 0)
+      doc.setLineWidth(1)
+      doc.line(sigX, currentY + 4, sigX + 200, currentY + 4)
+
+      currentY += 18
+      doc.setFont('Times', 'normal')
+      doc.setFontSize(12)
+      const pos1 = 'OIC - Provincial Officer'
+      const pos1Width = doc.getTextWidth(pos1)
+      doc.text(pos1, sigX + (200 - pos1Width)/2, currentY)
+      
+      currentY += 16
+      const pos2 = 'Department of Information and Communications Technology'
+      doc.setFontSize(10)
+      const pos2Width = doc.getTextWidth(pos2)
+      doc.text(pos2, sigX + (200 - pos2Width)/2, currentY)
+      
+      currentY += 14
+      const pos3 = 'Oriental Mindoro Provincial Office'
+      const pos3Width = doc.getTextWidth(pos3)
+      doc.text(pos3, sigX + (200 - pos3Width)/2, currentY)
+
+      // Subtle seal/accent in the bottom left - Adjusted position to avoid border
+      doc.setDrawColor(212, 175, 55)
+      doc.setFillColor(212, 175, 55)
+      doc.circle(80, pageHeight - 90, 25, 'F')
+      doc.setDrawColor(255, 255, 255)
+      doc.setLineWidth(1)
+      doc.circle(80, pageHeight - 90, 20, 'S')
+      doc.circle(80, pageHeight - 90, 15, 'S')
+      doc.setFontSize(8)
+      doc.setTextColor(255, 255, 255)
+      doc.text('DICT', 72, pageHeight - 87)
 
       const safeName = internName.replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '') || 'intern'
       const filename = `${safeName}_completion_certificate.pdf`

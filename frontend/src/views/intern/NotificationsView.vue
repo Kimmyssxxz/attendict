@@ -21,7 +21,7 @@
           <div v-if="showNotifications" class="absolute right-0 mt-2 bg-white text-slate-900 min-w-[220px] rounded-xl shadow-[0_10px_25px_rgba(15,23,42,0.25)] p-3 z-20" @click.stop>
             <h3 class="m-0 mb-2 text-sm font-semibold">Notifications</h3>
             <ul v-if="notifications.length" class="list-none p-0 m-0 text-[0.85rem]">
-              <li v-for="(n, idx) in notifications" :key="idx" class="mt-1 first:mt-0">{{ n }}</li>
+              <li v-for="(n, idx) in notifications" :key="idx" class="mt-1 first:mt-0 border-b border-slate-100 pb-2 last:border-0 last:pb-0">{{ n.message || n }}</li>
             </ul>
             <p v-else class="m-0 text-[0.8rem] text-gray-500">No notifications</p>
           </div>
@@ -45,17 +45,19 @@
 
         <ul v-if="notifications.length" class="list-none m-0 p-0 pl-1 text-[0.9rem] text-slate-900 flex flex-col gap-2">
           <li v-for="(n, idx) in notifications" :key="idx" class="bg-slate-50 rounded-lg p-3 border border-slate-100">
-            <label class="flex items-start gap-3 cursor-pointer">
-              <input type="checkbox" v-model="selectedIndexes" :value="idx" class="mt-1 w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer" />
-              <div class="flex flex-col gap-1.5 w-full">
-                <span class="font-medium text-slate-800">{{ n.message || n }}</span>
-                <div
-                  v-if="n.metadata && (n.metadata.timeInLocation || n.metadata.timeOutLocation || n.metadata.location)"
-                  class="flex flex-col gap-1 text-[0.8rem] text-slate-500 bg-white p-2 rounded-md border border-slate-200/60"
-                >
-                  <span v-if="n.metadata.timeInLocation" class="flex gap-1"><span class="font-semibold shrink-0">Time In:</span> <span class="truncate">{{ formatLocation(n.metadata.timeInLocation) }}</span></span>
-                  <span v-if="n.metadata.timeOutLocation" class="flex gap-1"><span class="font-semibold shrink-0">Time Out:</span> <span class="truncate">{{ formatLocation(n.metadata.timeOutLocation) }}</span></span>
-                  <span v-else-if="!n.metadata.timeInLocation && !n.metadata.timeOutLocation && n.metadata.location" class="flex gap-1"><span class="font-semibold shrink-0">Location:</span> <span class="truncate">{{ n.metadata.location }}</span></span>
+            <label class="flex items-start justify-between gap-3 cursor-pointer w-full">
+              <div class="flex items-start gap-3 w-full">
+                <input type="checkbox" v-model="selectedIndexes" :value="idx" class="mt-1 w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                <div class="flex flex-col gap-1.5 w-full">
+                  <span class="font-medium text-slate-800 whitespace-pre-wrap">{{ n.message || n }}</span>
+                  <div
+                    v-if="n.metadata && (n.metadata.timeInLocation || n.metadata.timeOutLocation || n.metadata.location)"
+                    class="flex flex-col gap-1 text-[0.8rem] text-slate-500 bg-white p-2 rounded-md border border-slate-200/60"
+                  >
+                    <span v-if="n.metadata.timeInLocation" class="flex gap-1"><span class="font-semibold shrink-0">Time In:</span> <span class="truncate">{{ formatLocation(n.metadata.timeInLocation) }}</span></span>
+                    <span v-if="n.metadata.timeOutLocation" class="flex gap-1"><span class="font-semibold shrink-0">Time Out:</span> <span class="truncate">{{ formatLocation(n.metadata.timeOutLocation) }}</span></span>
+                    <span v-else-if="!n.metadata.timeInLocation && !n.metadata.timeOutLocation && n.metadata.location" class="flex gap-1"><span class="font-semibold shrink-0">Location:</span> <span class="truncate">{{ n.metadata.location }}</span></span>
+                  </div>
                 </div>
               </div>
             </label>

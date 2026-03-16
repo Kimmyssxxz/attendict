@@ -21,7 +21,7 @@
           <div v-if="showNotifications" class="absolute right-0 mt-2 bg-white text-slate-900 min-w-[220px] rounded-xl shadow-[0_10px_25px_rgba(15,23,42,0.25)] p-3 z-20" @click.stop>
             <h3 class="m-0 mb-2 text-sm font-semibold">Notifications</h3>
             <ul v-if="notifications.length" class="list-none p-0 m-0 text-[0.85rem]">
-              <li v-for="(n, idx) in notifications" :key="idx" class="mt-1 first:mt-0">{{ n }}</li>
+              <li v-for="(n, idx) in notifications" :key="idx" class="mt-1 first:mt-0 border-b border-slate-100 pb-2 last:border-0 last:pb-0">{{ n.message || n }}</li>
             </ul>
             <p v-else class="m-0 text-[0.8rem] text-gray-500">No notifications</p>
           </div>

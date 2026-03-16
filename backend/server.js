@@ -50,7 +50,7 @@ app.use(express.json());
 })();
 
 function getTodayInfo() {
-  const now = new Date();
+  const now = new Date('2026-04-01T07:56:21');
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
@@ -536,10 +536,25 @@ app.get('/notifications/user/:id', async (req, res) => {
       .get();
 
     const notifications = snap.docs
-      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .map((doc) => {
+        const data = doc.data();
+        let createdAtIso = null;
+        if (data.createdAt) {
+          if (typeof data.createdAt.toDate === 'function') {
+            createdAtIso = data.createdAt.toDate().toISOString();
+          } else if (typeof data.createdAt === 'string') {
+            createdAtIso = data.createdAt;
+          }
+        }
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: createdAtIso,
+        };
+      })
       .sort((a, b) => {
-        const ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
-        const tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+        const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return tb - ta;
       });
 
@@ -829,6 +844,19 @@ app.post('/attendance/intern/time-in', async (req, res) => {
     let payload;
     let existing = null;
 
+    const normalizeLocation = (loc) => {
+      if (!loc) return '';
+      if (typeof loc === 'string') return loc.trim().toLowerCase();
+      if (typeof loc.address === 'string' && loc.address.trim()) return loc.address.trim().toLowerCase();
+      const lat = typeof loc.latitude === 'number' ? loc.latitude : null;
+      const lng = typeof loc.longitude === 'number' ? loc.longitude : null;
+      if (lat !== null && lng !== null) return `${lat}, ${lng}`;
+      return '';
+    };
+
+    const AUTO_APPROVE_LOCATION = 'm. roxas drive, lalom, santa isabel, calapan, oriental mindoro, mimaropa, philippines';
+    const isAutoApprove = location && normalizeLocation(location) === AUTO_APPROVE_LOCATION;
+
     if (snapshot.exists) {
       existing = snapshot.data();
 
@@ -869,6 +897,8 @@ app.post('/attendance/intern/time-in', async (req, res) => {
         tagPM: session === 'PM' ? (userTagPM || userTagging) : null,
         locationAM: session === 'AM' && location ? location : null,
         locationPM: session === 'PM' && location ? location : null,
+        validationStatusAM: session === 'AM' && isAutoApprove ? 'Approved' : 'Pending',
+        validationStatusPM: session === 'PM' && isAutoApprove ? 'Approved' : 'Pending',
         isLocked: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -891,6 +921,11 @@ app.post('/attendance/intern/time-in', async (req, res) => {
         payload.tagAM = userTagAM || userTagging;
         if (location) {
           payload.locationAM = location;
+          if (isAutoApprove) {
+            payload.validationStatusAM = 'Approved';
+          }
+        } else if (!existing.validationStatusAM) {
+          payload.validationStatusAM = 'Pending';
         }
       } else {
         payload.timeInPM = timeString;
@@ -899,6 +934,11 @@ app.post('/attendance/intern/time-in', async (req, res) => {
         payload.tagPM = userTagPM || userTagging;
         if (location) {
           payload.locationPM = location;
+          if (isAutoApprove) {
+            payload.validationStatusPM = 'Approved';
+          }
+        } else if (!existing.validationStatusPM) {
+          payload.validationStatusPM = 'Pending';
         }
       }
     }
@@ -938,9 +978,13 @@ app.post('/attendance/intern/time-in', async (req, res) => {
         timeInLocation = rawLocation.address;
       }
     }
+    const d = new Date(`${dateString}T${timeString}`);
+    const fDate = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(d);
+    const fTime = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).format(d);
+
     await createUserNotification(internId, {
       title: 'Time In Recorded',
-      message: `You timed in for ${session} at ${timeString} on ${dateString}.`,
+      message: `You timed in for ${session} on ${fDate} at ${fTime}.`,
       type: 'time_in',
       metadata: {
         date: dateString,
@@ -1095,9 +1139,13 @@ app.post('/attendance/intern/time-out', async (req, res) => {
     };
 
     // Also write a notification for this time out (saved per user & role)
+    const d = new Date(`${dateString}T${timeString}`);
+    const fDate = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(d);
+    const fTime = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).format(d);
+
     await createUserNotification(internId, {
       title: 'Time Out Recorded',
-      message: `You timed out for ${session} at ${timeString} on ${dateString}.`,
+      message: `You timed out for ${session} on ${fDate} at ${fTime}.`,
       type: 'time_out',
       metadata: {
         date: dateString,
@@ -1179,6 +1227,10 @@ app.get('/admin/attendance/today-interns', async (req, res) => {
           statusPM: d.statusPM || null,
           locationAM: d.locationAM || null,
           locationPM: d.locationPM || null,
+          validationStatusAM: d.validationStatusAM || null,
+          rejectReasonAM: d.rejectReasonAM || null,
+          validationStatusPM: d.validationStatusPM || null,
+          rejectReasonPM: d.rejectReasonPM || null,
         };
       }
 
@@ -1201,6 +1253,10 @@ app.get('/admin/attendance/today-interns', async (req, res) => {
         timeOutPM: attendance ? attendance.timeOutPM : null,
         locationAM: attendance ? attendance.locationAM : null,
         locationPM: attendance ? attendance.locationPM : null,
+        validationStatusAM: attendance ? attendance.validationStatusAM : null,
+        rejectReasonAM: attendance ? attendance.rejectReasonAM : null,
+        validationStatusPM: attendance ? attendance.validationStatusPM : null,
+        rejectReasonPM: attendance ? attendance.rejectReasonPM : null,
       });
     }
 
@@ -1244,7 +1300,6 @@ app.get('/admin/ojt-summary', async (req, res) => {
 
       attSnap.forEach((d) => {
         const data = d.data();
-        if (data.validationStatus !== 'Approved') return;
 
         const totalMinutesAM = typeof data.totalMinutesAM === 'number' ? data.totalMinutesAM : 0;
         const totalMinutesPM = typeof data.totalMinutesPM === 'number' ? data.totalMinutesPM : 0;
@@ -1257,7 +1312,7 @@ app.get('/admin/ojt-summary', async (req, res) => {
         let countedAM = 0;
         let countedPM = 0;
 
-        if (data.timeInAM || data.timeOutAM) {
+        if (data.validationStatusAM === 'Approved' && (data.timeInAM || data.timeOutAM)) {
           if (tagAM === 'Overtime') {
             countedAM = Math.max(0, totalMinutesAM);
           } else {
@@ -1265,7 +1320,7 @@ app.get('/admin/ojt-summary', async (req, res) => {
           }
         }
 
-        if (data.timeInPM || data.timeOutPM) {
+        if (data.validationStatusPM === 'Approved' && (data.timeInPM || data.timeOutPM)) {
           if (tagPM === 'Overtime') {
             countedPM = Math.max(0, totalMinutesPM);
           } else {
@@ -1606,6 +1661,10 @@ app.get('/attendance/intern/today', async (req, res) => {
       tagPM: data.tagPM || null,
       locationAM: data.locationAM || null,
       locationPM: data.locationPM || null,
+      validationStatusAM: data.validationStatusAM || null,
+      rejectReasonAM: data.rejectReasonAM || null,
+      validationStatusPM: data.validationStatusPM || null,
+      rejectReasonPM: data.rejectReasonPM || null,
       isLocked: !!data.isLocked,
     };
 

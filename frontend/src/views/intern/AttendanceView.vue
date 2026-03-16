@@ -21,30 +21,13 @@
           <div v-if="showNotifications" class="absolute right-0 mt-2 bg-white text-slate-900 min-w-[220px] rounded-xl shadow-[0_10px_25px_rgba(15,23,42,0.25)] p-3 z-20" @click.stop>
             <h3 class="m-0 mb-2 text-sm font-semibold">Notifications</h3>
             <ul v-if="notifications.length" class="list-none p-0 m-0 text-[0.85rem]">
-              <li v-for="(n, idx) in notifications" :key="idx" class="mt-1 first:mt-0">{{ n }}</li>
+              <li v-for="(n, idx) in notifications" :key="idx" class="mt-1 first:mt-0 border-b border-slate-100 pb-2 last:border-0 last:pb-0">{{ n.message || n }}</li>
             </ul>
             <p v-else class="m-0 text-[0.8rem] text-gray-500">No notifications</p>
           </div>
         </div>
       </div>
     </header>
-
-    <!-- Download Format Modal -->
-    <div v-if="showDownloadModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]" @click="showDownloadModal = false">
-      <div class="bg-white p-8 rounded-2xl w-[90%] max-w-[400px] text-center shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1)]" @click.stop>
-        <h3 class="mt-0 text-slate-800 text-xl font-bold mb-2">Select Download Format</h3>
-        <p class="text-slate-500 mb-6 text-sm">How would you like to download your Daily Time Record (DTR)?</p>
-        <div class="flex flex-col gap-3 mb-6">
-          <button class="flex items-center justify-center gap-2 p-3 rounded-lg border border-slate-200 bg-slate-50 font-semibold cursor-pointer transition-all hover:bg-red-50 hover:border-red-500 hover:text-red-700" @click="handleDownload('pdf')">
-            <span class="text-lg">📄</span> PDF Format
-          </button>
-          <button class="flex items-center justify-center gap-2 p-3 rounded-lg border border-slate-200 bg-slate-50 font-semibold cursor-pointer transition-all hover:bg-blue-50 hover:border-blue-500 hover:text-blue-700" @click="handleDownload('word')">
-            <span class="text-lg">📝</span> Word Format
-          </button>
-        </div>
-        <button class="bg-transparent border-none text-slate-400 cursor-pointer text-sm underline hover:text-slate-500" @click="showDownloadModal = false">Cancel</button>
-      </div>
-    </div>
 
     <main class="max-w-[1100px] mx-auto my-8 px-4 flex flex-col gap-6">
       <section class="bg-white rounded-2xl shadow-[0_10px_25px_rgba(15,23,42,0.08)] p-6">
@@ -54,8 +37,9 @@
             <label for="month" class="block mb-1.5 text-[0.85rem] text-slate-600 font-medium">Month</label>
             <select id="month" v-model="selectedMonth" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 bg-white">
               <option value="">All</option>
-              <option value="2025-01">January 2025</option>
-              <option value="2025-02">February 2025</option>
+              <option v-for="m in availableMonths" :key="m.value" :value="m.value">
+                {{ m.label }}
+              </option>
             </select>
           </div>
           <div>
@@ -67,7 +51,7 @@
             <input id="to" type="date" v-model="toDate" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 bg-white" />
           </div>
           <div class="flex justify-end md:justify-start">
-            <button class="px-5 py-2.5 rounded-full border-none bg-orange-500 text-white text-sm font-semibold cursor-pointer transition-colors hover:bg-orange-600 w-full md:w-auto" @click="showDownloadModal = true">Download DTR</button>
+            <button class="px-5 py-2.5 rounded-full border-none bg-orange-500 text-white text-sm font-semibold cursor-pointer transition-colors hover:bg-orange-600 w-full md:w-auto" @click="exportPdf">Download DTR</button>
           </div>
         </div>
       </section>
@@ -83,10 +67,11 @@
                 <th class="font-semibold text-[0.8rem] uppercase tracking-wider text-slate-500 px-4 py-3 text-left border-b border-slate-200">Time Out</th>
                 <th class="font-semibold text-[0.8rem] uppercase tracking-wider text-slate-500 px-4 py-3 text-left border-b border-slate-200">Total Hours</th>
                 <th class="font-semibold text-[0.8rem] uppercase tracking-wider text-slate-500 px-4 py-3 text-left border-b border-slate-200">Tag</th>
+                <th class="font-semibold text-[0.8rem] uppercase tracking-wider text-slate-500 px-4 py-3 text-left border-b border-slate-200">Validation</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="record in paginatedRecords" :key="record.id + '-' + (record.sessionLabel || 'all')" class="hover:bg-slate-50/50 transition-colors">
+              <tr v-for="record in paginatedRecords" :key="record.id + '-' + (record.sessionLabel || 'all')" class="hover:bg-slate-50/50 transition-colors cursor-pointer" @click="openDetailsModal(record)">
                 <td class="px-4 py-3 border-b border-slate-100 text-slate-700">{{ formatDate(record.date) }}</td>
                 <td class="px-4 py-3 border-b border-slate-100 text-slate-700">{{ formatTime12h(record.timeIn) }}</td>
                 <td class="px-4 py-3 border-b border-slate-100 text-slate-700">{{ formatTime12h(record.timeOut) }}</td>
@@ -94,6 +79,16 @@
                 <td class="px-4 py-3 border-b border-slate-100">
                   <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold', record.status === 'Overtime' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-green-100 text-green-800 border border-green-200']">
                     {{ record.status }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 border-b border-slate-100">
+                  <span :class="[
+                    'inline-flex items-center w-fit px-2.5 py-1 rounded-full text-xs font-semibold border',
+                    (record.validationStatus || 'Pending') === 'Pending' ? 'bg-amber-100 text-amber-800 border-amber-200' :
+                    (record.validationStatus || 'Pending') === 'Approved' ? 'bg-green-100 text-green-800 border-green-200' :
+                    'bg-red-100 text-red-800 border-red-200'
+                  ]">
+                    {{ record.validationStatus || 'Pending' }}
                   </span>
                 </td>
               </tr>
@@ -123,6 +118,74 @@
 
       </section>
     </main>
+
+    <!-- Record Details Modal -->
+    <div v-if="showDetailsModal && selectedRecord" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="closeDetailsModal"></div>
+      <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <h3 class="text-lg font-semibold text-slate-800 m-0">Attendance Details</h3>
+          <button @click="closeDetailsModal" class="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer bg-transparent border-none">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-6 flex flex-col gap-4">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <span class="text-slate-500 text-sm font-medium">Date</span>
+            <span class="text-slate-900 font-medium">{{ formatDate(selectedRecord.date) }}</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3" v-if="selectedRecord.sessionLabel">
+            <span class="text-slate-500 text-sm font-medium">Session</span>
+            <span class="text-slate-900 font-medium">{{ selectedRecord.sessionLabel }}</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <span class="text-slate-500 text-sm font-medium">Time In</span>
+            <span class="text-slate-900">{{ formatTime12h(selectedRecord.timeIn) }}</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <span class="text-slate-500 text-sm font-medium">Time Out</span>
+            <span class="text-slate-900">{{ formatTime12h(selectedRecord.timeOut) }}</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <span class="text-slate-500 text-sm font-medium">Total Hours</span>
+            <span class="text-slate-900 font-medium">{{ selectedRecord.totalHoursLabel || '0h 0m' }}</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <span class="text-slate-500 text-sm font-medium">Tag</span>
+            <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold', selectedRecord.status === 'Overtime' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-green-100 text-green-800 border border-green-200']">
+              {{ selectedRecord.status }}
+            </span>
+          </div>
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <span class="text-slate-500 text-sm font-medium">Validation</span>
+            <span :class="[
+              'inline-flex items-center w-fit px-2.5 py-1 rounded-full text-xs font-semibold border',
+              (selectedRecord.validationStatus || 'Pending') === 'Pending' ? 'bg-amber-100 text-amber-800 border-amber-200' :
+              (selectedRecord.validationStatus || 'Pending') === 'Approved' ? 'bg-green-100 text-green-800 border-green-200' :
+              'bg-red-100 text-red-800 border-red-200'
+            ]">
+              {{ selectedRecord.validationStatus || 'Pending' }}
+            </span>
+          </div>
+          <div v-if="(selectedRecord.validationStatus || 'Pending') === 'Rejected' && selectedRecord.rejectReason" class="flex flex-col gap-2 bg-red-50 p-4 rounded-xl border border-red-100 mt-2">
+            <span class="text-red-800 text-sm font-semibold flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              Reason for Rejection
+            </span>
+            <span class="text-[0.9rem] text-red-700 leading-relaxed">
+              {{ selectedRecord.rejectReason }}
+            </span>
+          </div>
+        </div>
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+          <button @click="closeDetailsModal" class="px-5 py-2.5 rounded-full border-none bg-slate-800 text-white text-sm font-semibold cursor-pointer transition-colors hover:bg-slate-700">Close</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -138,12 +201,12 @@ export default {
       internName: '',
       internTagging: '',
       notifications: [],
-      unreadCount: 0,
       internId: null,
       showNotifications: false,
-      showDownloadModal: false,
       currentPage: 1,
-      itemsPerPage: 10
+      itemsPerPage: 10,
+      showDetailsModal: false,
+      selectedRecord: null
     }
   },
   created() {
@@ -218,6 +281,10 @@ export default {
           tagging: r.tagging || null,
           tagAM: r.tagAM || null,
           tagPM: r.tagPM || null,
+          validationStatusAM: r.validationStatusAM || 'Pending',
+          rejectReasonAM: r.rejectReasonAM || null,
+          validationStatusPM: r.validationStatusPM || 'Pending',
+          rejectReasonPM: r.rejectReasonPM || null,
         }));
 
         // Load notifications for header bell
@@ -250,6 +317,14 @@ export default {
       });
   },
   methods: {
+    openDetailsModal(record) {
+      this.selectedRecord = record;
+      this.showDetailsModal = true;
+    },
+    closeDetailsModal() {
+      this.showDetailsModal = false;
+      this.selectedRecord = null;
+    },
     toggleNotifications() {
       this.showNotifications = !this.showNotifications
     },
@@ -278,188 +353,6 @@ export default {
       const h = Math.floor(safeMinutes / 60);
       const m = safeMinutes % 60;
       return `${h}h ${m}m`;
-    },
-    handleDownload(format) {
-      this.showDownloadModal = false;
-      if (format === 'pdf') {
-        this.exportPdf();
-      } else {
-        this.exportWord();
-      }
-    },
-    exportWord() {
-      if (!this.filteredRecords.length) {
-        alert('No attendance records to export.');
-        return;
-      }
-      
-      const parseLocalDate = (ymd) => {
-        if (!ymd || typeof ymd !== 'string') return null;
-        const m = ymd.match(/^(\d{4})-(\d{2})-(\d{2})/);
-        if (!m) return null;
-        const y = parseInt(m[1], 10);
-        const mo = parseInt(m[2], 10);
-        const d = parseInt(m[3], 10);
-        return new Date(y, mo - 1, d);
-      };
-
-      const resolveBaseDate = () => {
-        if (this.selectedMonth) {
-          const parsed = parseLocalDate(`${this.selectedMonth}-01`);
-          if (parsed && !Number.isNaN(parsed.getTime())) return parsed;
-        }
-        if (this.fromDate) {
-          const parsed = parseLocalDate(this.fromDate);
-          if (parsed && !Number.isNaN(parsed.getTime())) return parsed;
-        }
-        const firstWithDate = this.filteredRecords.find(r => !!r.date);
-        if (firstWithDate && firstWithDate.date) {
-          const parsed = parseLocalDate(firstWithDate.date);
-          if (parsed && !Number.isNaN(parsed.getTime())) return parsed;
-        }
-        return new Date();
-      };
-
-      const baseDate = resolveBaseDate();
-      const year = baseDate.getFullYear();
-      const monthIndex = baseDate.getMonth();
-      const monthName = baseDate.toLocaleDateString('en-US', { month: 'long' });
-      
-      const byDay = {};
-      this.filteredRecords.forEach((r) => {
-        if (!r.date) return;
-        const d = parseLocalDate(r.date) || new Date(r.date);
-        if (!d || Number.isNaN(d.getTime())) return;
-        if (d.getFullYear() !== year || d.getMonth() !== monthIndex) return;
-
-        const dayNum = d.getDate();
-        if (dayNum < 1 || dayNum > 31) return;
-
-        byDay[dayNum] = {
-          amArrival: r.timeInAM ? this.formatTime12h(r.timeInAM) : '',
-          amDeparture: r.timeOutAM ? this.formatTime12h(r.timeOutAM) : '',
-          pmArrival: r.timeInPM ? this.formatTime12h(r.timeInPM) : '',
-          pmDeparture: r.timeOutPM ? this.formatTime12h(r.timeOutPM) : ''
-        };
-      });
-
-      const generateTableHtml = () => {
-        let html = `
-          <div style="font-family:'Times New Roman', serif;width:3.25in;page-break-inside:avoid;line-height:0.6;mso-line-height-rule:exactly;">
-            <div style="text-align:center;font-size:7pt;margin-bottom:0pt;mso-line-height-rule:exactly;line-height:7pt;">Civil Service Form No. 48</div>
-            <div style="text-align:center;font-weight:bold;font-size:9.5pt;margin-bottom:0.1pt;mso-line-height-rule:exactly;line-height:10pt;">DAILY TIME RECORD</div>
-            <div style="text-align:center;margin:0.1pt 0 0.1pt 0;border-bottom:0.5pt solid #000;padding-bottom:0pt;font-size:9.5pt;font-weight:bold;mso-line-height-rule:exactly;line-height:10pt;">${this.internName || '(Name)'}</div>
-            <div style="margin-top:0pt;font-size:8pt;mso-line-height-rule:exactly;line-height:8.5pt;">For the month of <span style="text-decoration:underline;font-weight:bold;">${monthName} ${year}</span></div>
-            <div style="margin-top:0pt;display:flex;justify-content:space-between;align-items:flex-start;font-size:6.2pt;line-height:0.6;">
-              <div style="width:60%;">Official hours of arrival<br/>and departure</div>
-              <div style="text-align:left;width:40%;">Regular days ________<br/>Saturdays ________</div>
-            </div>
-            
-            <table border="1" cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-family:Arial, sans-serif;font-size:6.2pt;width:100%;margin:1pt auto;table-layout:fixed;">
-              <thead>
-                <tr style="height:7.5pt;mso-height-rule:exactly;">
-                  <th rowspan="2" style="width:10%;">Day</th>
-                  <th colspan="2">A.M.</th>
-                  <th colspan="2">P.M.</th>
-                  <th colspan="2">Undertime</th>
-                </tr>
-                <tr style="height:7.5pt;mso-height-rule:exactly;">
-                  <th style="width:15%;">Arrival</th>
-                  <th style="width:15%;">Departure</th>
-                  <th style="width:15%;">Arrival</th>
-                </tr>
-              </thead>
-              <tbody>
-`;
-
-        for (let day = 1; day <= 31; day++) {
-          const data = byDay[day] || { amArrival: '', amDeparture: '', pmArrival: '', pmDeparture: '' };
-          html += `
-                <tr style="height:5.8pt;mso-height-rule:exactly;line-height:0.6;">
-                  <td style="text-align:center;">${day}</td>
-                  <td style="text-align:center;font-size:5.5pt;">${data.amArrival}</td>
-                  <td style="text-align:center;font-size:5.5pt;">${data.amDeparture}</td>
-                  <td style="text-align:center;font-size:5.5pt;">${data.pmArrival}</td>
-                  <td style="text-align:center;font-size:5.5pt;">${data.pmDeparture}</td>
-                  <td style="text-align:center;"></td>
-                  <td style="text-align:center;"></td>
-                </tr>
-`;
-        }
-
-        html += `
-                <tr style="height:7.5pt;mso-height-rule:exactly;">
-                  <td style="font-weight:bold;text-align:center;">Total</td>
-                  <td></td><td></td><td></td><td></td>
-                  <td></td><td></td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div style="font-family:serif;font-size:6.2pt;margin-top:0pt;text-align:justify;line-height:0.6;">
-              I certify on my honor that the above is a true and correct report of the hours of work performed, record of which was
-              made daily at the time of arrival and departure from office.
-            </div>
-            <div style="height:1.5pt;mso-line-height-rule:exactly;line-height:1.5pt;"></div>
-            <div style="text-align:center;font-family:sans-serif;font-size:8.5pt;margin-top:0.1pt;mso-line-height-rule:exactly;line-height:9pt;">
-              <div style="font-weight:bold;">${this.internName || '&nbsp;'}</div>
-              <div style="border-top:0.5pt solid #000;margin:0 10pt 0.1pt 10pt;height:0.5pt;"></div>
-              <div style="font-size:6pt;">OJT Intern</div>
-            </div>
-            <div style="height:1.5pt;mso-line-height-rule:exactly;line-height:1.5pt;"></div>
-            <div style="text-align:center;font-family:sans-serif;font-size:8.5pt;margin-top:0.1pt;mso-line-height-rule:exactly;line-height:9pt;">
-              <div style="font-weight:bold;">ENGR. MARVIN D. BEJASA</div>
-              <div style="border-top:0.5pt solid #000;margin:0 10pt 0.1pt 10pt;height:0.5pt;"></div>
-              <div style="font-size:6pt;">OIC - Provincial Officer</div>
-              <div style="font-size:5.5pt;"><i>In-Charge</i></div>
-            </div>
-          </div>
-`;
-        return html;
-      };
-
-      const tableHtmlOne = generateTableHtml();
-      
-      let content = `
-        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head><meta charset='utf-8'><title>DTR ${this.internName}</title>
-        <!--[if gte mso 9]>
-        <xml>
-        <w:WordDocument>
-          <w:View>Print</w:View>
-          <w:Zoom>100</w:Zoom>
-          <w:DoNotOptimizeForBrowser/>
-        </w:WordDocument>
-        </xml>
-        <![endif]-->
-        <style>
-          @page { 
-            size: portrait; 
-            margin: 0.25in; 
-          }
-          body { margin: 0; padding: 0; }
-          .main-table { width: 100%; border-collapse: collapse; border: none; table-layout: fixed; }
-          .column { width: 50%; vertical-align: top; border: none; padding: 0 3pt; }
-        </style>
-        </head>
-        <body>
-          <table class="main-table">
-            <tr>
-              <td class="column">${tableHtmlOne}</td>
-              <td class="column">${tableHtmlOne}</td>
-            </tr>
-          </table>
-        </body></html>
-      `;
-
-      const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `DTR_${this.internName.replace(/\s+/g, '_')}_${monthName}_${year}.doc`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
     },
     exportPdf() {
       if (!this.filteredRecords.length) {
@@ -564,7 +457,7 @@ export default {
       tableHtmlOne += '</thead>';
       tableHtmlOne += '<tbody>';
 
-      for (let day = 1; day <= 31; day++) {
+      for (let day = 1; day <= daysInMonth; day++) {
         const data = byDay[day];
         const amArr = data ? data.amArrival : '';
         const amDep = data ? data.amDeparture : '';
@@ -573,14 +466,38 @@ export default {
         const hoursVal = '';
         const minsVal = '';
 
+        const currentDt = new Date(year, monthIndex, day);
+        const dayOfWeek = currentDt.getDay();
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
         tableHtmlOne += '<tr>';
         tableHtmlOne += `<td style="text-align:center;">${day}</td>`;
-        tableHtmlOne += `<td style="text-align:center;">${amArr}</td>`;
-        tableHtmlOne += `<td style="text-align:center;">${amDep}</td>`;
-        tableHtmlOne += `<td style="text-align:center;">${pmArr}</td>`;
-        tableHtmlOne += `<td style="text-align:center;">${pmDep}</td>`;
-        tableHtmlOne += `<td style="text-align:center;">${hoursVal}</td>`;
-        tableHtmlOne += `<td style="text-align:center;">${minsVal}</td>`;
+        
+        if (isWeekend && !amArr && !amDep && !pmArr && !pmDep) {
+          const dayName = dayOfWeek === 0 ? 'SUNDAY' : 'SATURDAY';
+          tableHtmlOne += `<td colspan="4" style="text-align:center; font-weight:bold; letter-spacing: 2px;">${dayName}</td>`;
+          tableHtmlOne += `<td style="text-align:center;"></td>`;
+          tableHtmlOne += `<td style="text-align:center;"></td>`;
+        } else {
+          tableHtmlOne += `<td style="text-align:center;">${amArr}</td>`;
+          tableHtmlOne += `<td style="text-align:center;">${amDep}</td>`;
+          tableHtmlOne += `<td style="text-align:center;">${pmArr}</td>`;
+          tableHtmlOne += `<td style="text-align:center;">${pmDep}</td>`;
+          tableHtmlOne += `<td style="text-align:center;">${hoursVal}</td>`;
+          tableHtmlOne += `<td style="text-align:center;">${minsVal}</td>`;
+        }
+        tableHtmlOne += '</tr>';
+      }
+
+      for (let day = daysInMonth + 1; day <= 31; day++) {
+        tableHtmlOne += '<tr>';
+        tableHtmlOne += `<td style="text-align:center;">${day}</td>`;
+        tableHtmlOne += `<td style="text-align:center;"></td>`;
+        tableHtmlOne += `<td style="text-align:center;"></td>`;
+        tableHtmlOne += `<td style="text-align:center;"></td>`;
+        tableHtmlOne += `<td style="text-align:center;"></td>`;
+        tableHtmlOne += `<td style="text-align:center;"></td>`;
+        tableHtmlOne += `<td style="text-align:center;"></td>`;
         tableHtmlOne += '</tr>';
       }
 
@@ -630,6 +547,35 @@ export default {
     }
   },
   computed: {
+    availableMonths() {
+      const months = [];
+      const startYear = 2026;
+      let maxDate = new Date();
+      
+      if (this.records && this.records.length > 0) {
+        const recordDates = this.records.map(r => new Date(r.date).getTime()).filter(t => !isNaN(t));
+        if (recordDates.length > 0) {
+           const maxRecordDate = new Date(Math.max(...recordDates));
+           if (maxRecordDate > maxDate) {
+               maxDate = maxRecordDate;
+           }
+        }
+      }
+
+      const currentYear = maxDate.getFullYear();
+      const currentMonth = maxDate.getMonth();
+      for (let y = startYear; y <= currentYear; y++) {
+        const maxMonth = y === currentYear ? currentMonth : 11;
+        for (let m = 0; m <= maxMonth; m++) {
+          const mString = String(m + 1).padStart(2, '0');
+          const value = `${y}-${mString}`;
+          const date = new Date(y, m, 1);
+          const label = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+          months.push({ value, label });
+        }
+      }
+      return months.reverse();
+    },
     filteredRecords() {
       return this.records.filter(r => {
         if (this.selectedMonth && !r.date.startsWith(this.selectedMonth)) {
@@ -679,6 +625,8 @@ export default {
             totalHoursLabel: hoursForRowLabel,
             status: statusTag,
             sessionLabel: 'AM',
+            validationStatus: r.validationStatusAM || 'Pending',
+            rejectReason: r.rejectReasonAM || null,
           });
         }
 
@@ -701,6 +649,8 @@ export default {
             totalHoursLabel: hoursForRowLabel,
             status: statusTag,
             sessionLabel: 'PM',
+            validationStatus: r.validationStatusPM || 'Pending',
+            rejectReason: r.rejectReasonPM || null,
           });
         }
 
@@ -718,6 +668,8 @@ export default {
             ...r,
             totalHoursLabel: hoursForRowLabel,
             status: statusTag,
+            validationStatus: r.validationStatusAM || 'Pending',
+            rejectReason: r.rejectReasonAM || null,
           });
         }
       });

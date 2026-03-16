@@ -27,6 +27,12 @@
             <option value="all">All</option>
             <option value="student-intern">Student Interns Only</option>
           </select>
+          <button type="button" class="px-3.5 py-2 rounded text-sm cursor-pointer bg-red-600 text-white border-none transition-colors hover:bg-red-700 disabled:opacity-70 disabled:cursor-default" @click="exportToPDF">
+            Export PDF
+          </button>
+          <button type="button" class="px-3.5 py-2 rounded text-sm cursor-pointer bg-blue-800 text-white border-none transition-colors hover:bg-blue-900 disabled:opacity-70 disabled:cursor-default" @click="exportToWord">
+            Export Word
+          </button>
           <button type="button" class="px-3.5 py-2 rounded text-sm cursor-pointer bg-blue-600 text-white border-none transition-colors hover:bg-blue-700 disabled:opacity-70 disabled:cursor-default" @click="openAddModal">
             Add Intern
           </button>
@@ -58,8 +64,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(intern, index) in filteredInterns" :key="intern.id">
-                <td class="border border-gray-300 px-3 py-2">{{ index + 1 }}</td>
+              <tr v-for="(intern, index) in paginatedInterns" :key="intern.id">
+                <td class="border border-gray-300 px-3 py-2">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
                 <td class="border border-gray-300 px-3 py-2">{{ formatName(intern) }}</td>
                 <td class="border border-gray-300 px-3 py-2">{{ intern.username || '-' }}</td>
                 <td class="border border-gray-300 px-3 py-2">{{ intern.email || '-' }}</td>
@@ -106,6 +112,37 @@
               </tr>
             </tbody>
           </table>
+
+          <!-- Pagination Controls -->
+          <div class="mt-4 flex items-center justify-between" v-if="filteredInterns.length">
+            <div class="text-sm text-gray-600">
+              Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ Math.min(currentPage * itemsPerPage, filteredInterns.length) }} of {{ filteredInterns.length }} entries
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="flex items-center gap-2 text-sm text-gray-600">
+                <span>Rows per page:</span>
+                <select v-model.number="itemsPerPage" class="px-2 py-1 rounded border border-gray-300 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="25">25</option>
+                  <option value="30">30</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-2">
+                <button 
+                  class="px-3 py-1.5 rounded border border-gray-300 bg-white text-sm disabled:opacity-50 cursor-pointer transition-colors hover:bg-gray-50"
+                  :disabled="currentPage === 1"
+                  @click="currentPage--"
+                >Previous</button>
+                <span class="text-sm font-medium text-gray-700 px-2">Page {{ currentPage }} of {{ totalPages }}</span>
+                <button 
+                  class="px-3 py-1.5 rounded border border-gray-300 bg-white text-sm disabled:opacity-50 cursor-pointer transition-colors hover:bg-gray-50"
+                  :disabled="currentPage === totalPages"
+                  @click="currentPage++"
+                >Next</button>
+              </div>
+            </div>
+          </div>
 
           <div v-else class="text-[0.95rem] text-gray-600">No student interns found.</div>
         </div>
@@ -344,6 +381,8 @@
 import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { db } from '../../firebase'
 import AdminSidebar from './AdminSidebar.vue'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 export default {
   name: 'AdminStudentInternsView',
@@ -357,6 +396,8 @@ export default {
       error: '',
       search: '',
       roleFilter: 'student-intern',
+      currentPage: 1,
+      itemsPerPage: 10,
       showAddModal: false,
       savingIntern: false,
       newIntern: {
@@ -408,8 +449,193 @@ export default {
         )
       })
     },
+    totalPages() {
+      return Math.ceil(this.filteredInterns.length / this.itemsPerPage) || 1
+    },
+    paginatedInterns() {
+      const start = (this.currentPage - 1) * this.itemsPerPage
+      const end = start + this.itemsPerPage
+      return this.filteredInterns.slice(start, end)
+    }
+  },
+  watch: {
+    search() {
+      this.currentPage = 1
+    },
+    roleFilter() {
+      this.currentPage = 1
+    },
+    itemsPerPage() {
+      this.currentPage = 1
+    }
   },
   methods: {
+    loadImage(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => resolve(img)
+        img.onerror = (e) => reject(e)
+        img.src = url
+      })
+    },
+    async exportToPDF() {
+      const doc = new jsPDF({ unit: 'pt', format: 'legal', orientation: 'landscape' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      
+      try {
+        const logo1 = await this.loadImage('/dictlogo2.png');
+        const logo2 = await this.loadImage('/Bagongpilipinas.png');
+        doc.addImage(logo1, 'PNG', 40, 15, 75, 75);
+        doc.addImage(logo2, 'PNG', pageWidth - 115, 15, 75, 75);
+      } catch(e) { console.error('Error loading logos', e); }
+
+      doc.setFont('Times', 'normal');
+      doc.setFontSize(12);
+      const text1 = 'REPUBLIC OF THE PHILIPPINES';
+      doc.text(text1, (pageWidth - doc.getTextWidth(text1)) / 2, 50);
+
+      doc.setFont('Times', 'bold');
+      doc.setFontSize(14);
+      const text2 = 'DEPARTMENT OF INFORMATION AND COMMUNICATIONS TECHNOLOGY';
+      doc.text(text2, (pageWidth - doc.getTextWidth(text2)) / 2, 65);
+
+      doc.setFont('Times', 'normal');
+      doc.setFontSize(12);
+      const text3 = 'Student Interns Report';
+      doc.text(text3, (pageWidth - doc.getTextWidth(text3)) / 2, 85);
+
+      const tableColumn = [
+        "Name", "Email", "Assigned Office", "School", 
+        "Req. Hrs", "Address", "Gender", "DOB", 
+        "Course", "Yr Lvl", "Started", "Ended"
+      ];
+      const tableRows = [];
+
+      this.filteredInterns.forEach((intern) => {
+        const rowData = [
+          this.formatName(intern),
+          intern.email || '-',
+          intern.assignedOffice || '-',
+          intern.schoolOrUniversity || '-',
+          intern.ojtRequiredHours ?? '-',
+          intern.address || '-',
+          intern.gender || '-',
+          intern.dateOfBirth || '-',
+          intern.course || "-",
+          intern.yearLevel || "-",
+          intern.startDate || "-",
+          intern.endDate || "-"
+        ];
+        tableRows.push(rowData);
+      });
+
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 110,
+        styles: { fontSize: 7, cellPadding: 3 },
+        headStyles: { fillColor: [24, 98, 240] }
+      });
+
+      doc.save('Student_Interns.pdf');
+    },
+    async exportToWord() {
+      const getBase64Image = async (url) => {
+        try {
+          const img = await this.loadImage(url);
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          return canvas.toDataURL('image/png');
+        } catch(e) {
+          return '';
+        }
+      };
+
+      const logoDict = await getBase64Image('/dictlogo2.png');
+      const logoBp = await getBase64Image('/Bagongpilipinas.png');
+
+      const dictImgHtml = logoDict ? `<img src="${logoDict}" width="75" height="75" />` : '';
+      const bpImgHtml = logoBp ? `<img src="${logoBp}" width="75" height="75" />` : '';
+
+      let html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>Student Interns</title>
+        <style>
+          @page WordSection1 {
+            size: 841.9pt 595.3pt; /* A4 Landscape */
+            mso-page-orientation: landscape;
+            margin: 1.0in 1.0in 1.0in 1.0in;
+          }
+          div.WordSection1 { page: WordSection1; }
+        </style>
+      </head>
+      <body>
+      <div class="WordSection1">`;
+      
+      html += `<table width="100%" style="margin-bottom: 20px;">
+        <tr>
+          <td width="20%" align="left">${dictImgHtml}</td>
+          <td width="60%" align="center">
+            <p style="font-family: 'Times New Roman', Times, serif; font-size: 14pt; margin: 0;">REPUBLIC OF THE PHILIPPINES</p>
+            <p style="font-family: 'Times New Roman', Times, serif; font-size: 12pt; font-weight: bold; margin: 0;">DEPARTMENT OF INFORMATION AND COMMUNICATIONS TECHNOLOGY</p>
+            <p style="font-family: 'Times New Roman', Times, serif; font-size: 12pt; margin: 0; margin-top: 10px;">Student Interns Report</p>
+          </td>
+          <td width="20%" align="right">${bpImgHtml}</td>
+        </tr>
+      </table>`;
+
+      html += `<table border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; font-size: 10pt;">
+        <thead>
+          <tr style="background-color: #f2f2f2;">
+            <th>Name</th>
+            <th>Email</th>
+            <th>Assigned Office</th>
+            <th>School/University</th>
+            <th>Required Hrs</th>
+            <th>Address</th>
+            <th>Gender</th>
+            <th>DOB</th>
+            <th>Course</th>
+            <th>Yr Lvl</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      this.filteredInterns.forEach((intern) => {
+        html += `<tr>
+          <td>${this.formatName(intern)}</td>
+          <td>${intern.email || '-'}</td>
+          <td>${intern.assignedOffice || '-'}</td>
+          <td>${intern.schoolOrUniversity || '-'}</td>
+          <td>${intern.ojtRequiredHours ?? '-'}</td>
+          <td>${intern.address || '-'}</td>
+          <td>${intern.gender || '-'}</td>
+          <td>${intern.dateOfBirth || '-'}</td>
+          <td>${intern.course || '-'}</td>
+          <td>${intern.yearLevel || '-'}</td>
+          <td>${intern.startDate || '-'}</td>
+          <td>${intern.endDate || '-'}</td>
+        </tr>`;
+      });
+
+      html += `</tbody></table></div></body></html>`;
+
+      const blob = new Blob(['\ufeff', html], {
+        type: 'application/msword'
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'Student_Interns.doc';
+      link.click();
+      URL.revokeObjectURL(url);
+    },
     async fetchInterns() {
       this.loading = true
       this.error = ''

@@ -21,7 +21,7 @@
           <div v-if="showNotifications" class="absolute right-0 mt-2 bg-white text-slate-900 min-w-[220px] rounded-xl shadow-[0_10px_25px_rgba(15,23,42,0.25)] p-3 z-20" @click.stop>
             <h3 class="m-0 mb-2 text-sm font-semibold">Notifications</h3>
             <ul v-if="notifications.length" class="list-none p-0 m-0 text-[0.85rem]">
-              <li v-for="(n, idx) in notifications" :key="idx" class="mt-1 first:mt-0">{{ n }}</li>
+              <li v-for="(n, idx) in notifications" :key="idx" class="mt-1 first:mt-0 border-b border-slate-100 pb-2 last:border-0 last:pb-0">{{ n.message || n }}</li>
             </ul>
             <p v-else class="m-0 text-[0.8rem] text-gray-500">No notifications</p>
           </div>
@@ -93,8 +93,8 @@
       </section>
     </main>
 
-    <div v-if="showModal" class="fixed inset-0 bg-slate-900/45 flex items-center justify-center z-50">
-      <div class="bg-white rounded-xl shadow-[0_20px_40px_rgba(15,23,42,0.35)] w-[min(90%,360px)] overflow-hidden">
+    <div v-if="showModal" class="fixed inset-0 bg-slate-900/45 flex items-center justify-center z-[9999]">
+      <div class="bg-white rounded-xl shadow-[0_20px_40px_rgba(15,23,42,0.35)] w-[min(90%,360px)] overflow-hidden relative z-[10000]">
         <div class="px-4 py-3 text-white" :class="modalType === 'error' ? 'bg-red-500' : 'bg-green-500'">
           <h3 class="m-0 text-[1.1rem] font-semibold">{{ modalTitle }}</h3>
         </div>
@@ -381,6 +381,10 @@ export default {
         this.leafletMarker.setLatLng(latlng)
       }
 
+      const addressText = this.locationAddress || 'Current Location'
+      const popupContent = `<div style="text-align:center;"><b>Your Location</b><br/><span style="font-size: 0.85rem; color: #475569;">${addressText}</span></div>`
+      this.leafletMarker.bindPopup(popupContent).openPopup()
+
       const targetZoom = this.leafletMap.getZoom() || 18
       this.leafletMap.setView(latlng, targetZoom < 18 ? 18 : targetZoom)
       this.leafletMap.invalidateSize()
@@ -630,7 +634,6 @@ export default {
 
         this.openModal('Time In Successful', `You have successfully timed in for the ${payload.session || ''} session.`, 'success')
         this.addNotification(`Time in for ${payload.session || ''} session at ${this.formatTime(this.lastActionTime)}`)
-        this.$router.push('/intern/notifications')
       } catch (err) {
         this.openModal('Connection Error', 'Error connecting to server. Please try again.', 'error')
       } finally {
@@ -686,7 +689,6 @@ export default {
         })
         this.openModal('Time Out Successful', `You have successfully timed out for the ${payload.session || ''} session.`, 'success')
         this.addNotification(`Time out for ${payload.session || ''} session at ${this.formatTime(this.lastActionTime)}`)
-        this.$router.push('/intern/notifications')
       } catch (err) {
         this.openModal('Connection Error', 'Error connecting to server. Please try again.', 'error')
       } finally {
