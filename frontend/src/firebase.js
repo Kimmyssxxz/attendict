@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, initializeFirestore } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
@@ -12,21 +12,9 @@ const firebaseConfig = {
   measurementId: 'G-SP4J5LCEZV'
 };
 
-// Google Maps configuration
-export const GOOGLE_MAPS_API_KEY = 'AIzaSyC4f3shTFohCCpYQS2Ies3QSbdY9fXEzNg';
-export const GOOGLE_MAPS_EMBED_URL = 'https://www.google.com/maps/embed/v1/place';
-
 const app = initializeApp(firebaseConfig);
 
-let db;
-try {
-  db = initializeFirestore(app, {
-    experimentalForceLongPolling: true,
-    useFetchStreams: false,
-  });
-} catch {
-  db = getFirestore(app);
-}
+const db = getFirestore(app);
 const storage = getStorage(app);
 
 export { app, db, storage };

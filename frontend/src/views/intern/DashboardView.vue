@@ -1,208 +1,194 @@
 <template>
-  <div class="intern-layout">
-    <header class="intern-header">
-      <h1>Student Intern Dashboard</h1>
-      <div class="intern-header-right">
-        <nav class="intern-nav">
-          <router-link to="/intern/dashboard">Dashboard</router-link>
-          <router-link to="/intern/time">Time In / Out</router-link>
-          <router-link to="/intern/attendance">My Attendance</router-link>
-          <router-link to="/intern/notifications">Notifications</router-link>
-          <router-link to="/intern/profile">Profile</router-link>
-          <router-link to="/intern/settings">Settings</router-link>
+  <div class="min-h-screen bg-slate-50 font-sans text-gray-800">
+    <header class="bg-slate-800 text-white px-8 py-4 flex flex-wrap items-center justify-between gap-4">
+      <h1 class="m-0 text-[1.4rem] font-bold">Student Intern Dashboard</h1>
+      <div class="flex items-center gap-4">
+        <nav class="flex flex-wrap gap-3">
+          <router-link to="/intern/dashboard" class="text-gray-200 no-underline px-3.5 py-1.5 rounded-full text-sm border border-transparent transition-colors hover:bg-slate-900 [&.router-link-active]:bg-orange-500 [&.router-link-active]:text-slate-900 [&.router-link-active]:border-orange-500">Dashboard</router-link>
+          <router-link to="/intern/time" class="text-gray-200 no-underline px-3.5 py-1.5 rounded-full text-sm border border-transparent transition-colors hover:bg-slate-900 [&.router-link-active]:bg-orange-500 [&.router-link-active]:text-slate-900 [&.router-link-active]:border-orange-500">Time In / Out</router-link>
+          <router-link to="/intern/attendance" class="text-gray-200 no-underline px-3.5 py-1.5 rounded-full text-sm border border-transparent transition-colors hover:bg-slate-900 [&.router-link-active]:bg-orange-500 [&.router-link-active]:text-slate-900 [&.router-link-active]:border-orange-500">My Attendance</router-link>
+          <router-link to="/intern/staff-status" class="text-gray-200 no-underline px-3.5 py-1.5 rounded-full text-sm border border-transparent transition-colors hover:bg-slate-900 [&.router-link-active]:bg-orange-500 [&.router-link-active]:text-slate-900 [&.router-link-active]:border-orange-500">Staff Status</router-link>
+          <router-link to="/intern/notifications" class="text-gray-200 no-underline px-3.5 py-1.5 rounded-full text-sm border border-transparent transition-colors hover:bg-slate-900 [&.router-link-active]:bg-orange-500 [&.router-link-active]:text-slate-900 [&.router-link-active]:border-orange-500">Notifications</router-link>
+          <router-link to="/intern/profile" class="text-gray-200 no-underline px-3.5 py-1.5 rounded-full text-sm border border-transparent transition-colors hover:bg-slate-900 [&.router-link-active]:bg-orange-500 [&.router-link-active]:text-slate-900 [&.router-link-active]:border-orange-500">Profile</router-link>
+          <router-link to="/intern/settings" class="text-gray-200 no-underline px-3.5 py-1.5 rounded-full text-sm border border-transparent transition-colors hover:bg-slate-900 [&.router-link-active]:bg-orange-500 [&.router-link-active]:text-slate-900 [&.router-link-active]:border-orange-500">Settings</router-link>
         </nav>
 
-        <div class="notif-wrapper" @click="toggleNotifications">
-          <div class="notif-bell">
-            <span class="bell-icon">🔔</span>
-            <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
+        <div class="relative cursor-pointer" @click="toggleNotifications">
+          <div class="relative w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center transition-colors hover:bg-slate-700">
+            <span class="text-base">🔔</span>
+            <span v-if="unreadCount > 0" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-[10px] px-1.5 py-0 min-w-[18px] text-center shadow-sm">{{ unreadCount }}</span>
           </div>
-          <div v-if="showNotifications" class="notif-panel" @click.stop>
-            <h3>Notifications</h3>
-            <ul v-if="notifications.length" class="notif-dropdown-list">
-              <li v-for="(n, idx) in notifications" :key="idx">{{ n }}</li>
+          <div v-if="showNotifications" class="absolute right-0 mt-2 bg-white text-slate-900 min-w-[220px] rounded-xl shadow-[0_10px_25px_rgba(15,23,42,0.25)] p-3 z-20" @click.stop>
+            <h3 class="m-0 mb-2 text-sm font-semibold">Notifications</h3>
+            <ul v-if="notifications.length" class="list-none p-0 m-0 text-[0.85rem]">
+              <li v-for="(n, idx) in notifications" :key="idx" class="mt-1 first:mt-0 border-b border-slate-100 pb-2 last:border-0 last:pb-0">{{ n.message || n }}</li>
             </ul>
-            <p v-else class="notif-empty">No notifications</p>
+            <p v-else class="m-0 text-[0.8rem] text-gray-500">No notifications</p>
           </div>
         </div>
       </div>
     </header>
 
-    <main class="dashboard-main">
-      <section class="left-column">
-        <div class="card welcome-section">
-          <div class="welcome-header">
-            <div class="welcome-emoji">👋</div>
+    <main class="max-w-[1100px] mx-auto my-8 px-4 grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
+      <section class="flex flex-col gap-4">
+        <div class="bg-white rounded-2xl shadow-[0_10px_25px_rgba(15,23,42,0.08)] p-6 flex flex-col gap-5">
+          <div class="flex items-center gap-4">
+            <div class="text-3xl">👋</div>
             <div>
-              <h2>Welcome back, {{ studentName }}!</h2>
-              <p class="welcome-sub">Here's a quick overview of your OJT progress.</p>
+              <h2 class="m-0 text-[1.25rem] text-slate-900">Welcome back, {{ studentName }}!</h2>
+              <p class="m-0 mt-1 text-[0.85rem] text-slate-500">Here's a quick overview of your OJT progress.</p>
             </div>
           </div>
 
-          <div class="student-info-grid">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <span class="label">Student Name</span>
-              <span class="value">{{ studentName }}</span>
+              <span class="block text-[0.8rem] text-slate-500 mb-1">Student Name</span>
+              <span class="text-[1.1rem] font-semibold text-slate-900">{{ studentName }}</span>
             </div>
             <div>
-              <span class="label">Course / School</span>
-              <span class="value">{{ courseAndSchool }}</span>
+              <span class="block text-[0.8rem] text-slate-500 mb-1">Course / School</span>
+              <span class="text-[1.1rem] font-semibold text-slate-900">{{ courseAndSchool }}</span>
             </div>
             <div>
-              <span class="label">Assigned Office / Supervisor</span>
-              <span class="value">{{ assignedOffice }}</span>
+              <span class="block text-[0.8rem] text-slate-500 mb-1">Assigned Office / Supervisor</span>
+              <span class="text-[1.1rem] font-semibold text-slate-900">{{ assignedOffice }}</span>
             </div>
             <div>
-              <span class="label">OJT Required Hours</span>
-              <span class="value">{{ requiredHours }} hrs</span>
+              <span class="block text-[0.8rem] text-slate-500 mb-1">OJT Required Hours</span>
+              <span class="text-[1.1rem] font-semibold text-slate-900">{{ requiredHours }} hrs</span>
+            </div>
+            <div>
+              <span class="block text-[0.8rem] text-slate-500 mb-1">OJT Remaining Hours</span>
+              <span class="text-[1.1rem] font-semibold text-slate-900">{{ remainingHoursDisplay }}</span>
             </div>
           </div>
 
-          <div class="progress-section">
-            <div class="progress-header">
-              <span class="label">Completed Hours vs Required Hours</span>
-              <span class="progress-text">{{ completedHours }} / {{ requiredHours }} hrs ({{ progressPercent }}%)</span>
+          <div class="mt-2">
+            <div class="flex justify-between items-center gap-3">
+              <span class="text-[0.8rem] text-slate-500">Completed Hours vs Required Hours</span>
+              <span class="text-[0.8rem] text-slate-600">
+                Remaining: {{ remainingHoursDisplay }} ({{ progressPercent }}%)
+              </span>
             </div>
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
+            <div class="w-full mt-2 h-2.5 bg-slate-200 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-[width] duration-300 ease-in-out" :style="{ width: progressPercent + '%' }"></div>
             </div>
           </div>
         </div>
 
-        <div class="card chart-card">
-          <div class="card-title-row">
-            <h3>Weekly Rendered Hours</h3>
-            <span class="chip">This week</span>
+        <div class="bg-white rounded-2xl shadow-[0_10px_25px_rgba(15,23,42,0.08)] p-6 flex flex-col gap-4">
+          <div class="flex justify-between items-center">
+            <h3 class="m-0 text-slate-900">Weekly Rendered Hours</h3>
+            <span class="text-[0.75rem] px-2.5 py-1 rounded-full bg-blue-50 text-blue-700">This week</span>
           </div>
-          <div class="simple-bar-chart">
-            <div
-              v-for="(day, index) in weeklyRenderedHours"
-              :key="day.label + index"
-              class="bar-item"
-            >
-              <div class="bar-wrapper">
-                <div
-                  class="bar"
-                  :style="{ height: day.percent + '%' }"
-                ></div>
-              </div>
-              <span class="bar-label">{{ day.label }}</span>
-              <span class="bar-value">{{ day.hours }}h</span>
-            </div>
-          </div>
+          <apexchart
+            type="area"
+            height="300"
+            :options="chartOptions"
+            :series="chartSeries"
+          ></apexchart>
         </div>
 
-        <div class="card analytics-card">
-          <h3>Attendance Analytics</h3>
-          <div class="analytics-grid">
-            <div class="analytics-item">
-              <span class="label">Average Time In</span>
-              <span class="analytics-value">{{ averageTimeIn }}</span>
+        <div class="bg-white rounded-2xl shadow-[0_10px_25px_rgba(15,23,42,0.08)] p-6">
+          <h3 class="mt-0 mb-3 text-[1rem] text-slate-900">Attendance Analytics</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <span class="block text-[0.8rem] text-slate-500 mb-1">Average Time In</span>
+              <span class="block mt-1 text-[1.1rem] font-semibold text-slate-900">{{ averageTimeIn }}</span>
             </div>
-            <div class="analytics-item">
-              <span class="label">Average Working Hours / Day</span>
-              <span class="analytics-value">{{ averageWorkingHoursPerDay }} hrs</span>
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <span class="block text-[0.8rem] text-slate-500 mb-1">Average Working Hours / Day</span>
+              <span class="block mt-1 text-[1.1rem] font-semibold text-slate-900">{{ averageWorkingHoursPerDay }} hrs</span>
             </div>
-            <div class="analytics-item">
-              <span class="label">Attendance Rate</span>
-              <span class="analytics-value">{{ attendanceRate }}%</span>
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <span class="block text-[0.8rem] text-slate-500 mb-1">Attendance Rate</span>
+              <span class="block mt-1 text-[1.1rem] font-semibold text-slate-900">{{ attendanceRate }}%</span>
             </div>
-            <div class="analytics-item">
-              <span class="label">Most Active Day</span>
-              <span class="analytics-value">{{ mostActiveDay }}</span>
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <span class="block text-[0.8rem] text-slate-500 mb-1">Most Active Day</span>
+              <span class="block mt-1 text-[1.1rem] font-semibold text-slate-900">{{ mostActiveDay }}</span>
             </div>
-            <div class="analytics-item">
-              <span class="label">Longest Working Streak</span>
-              <span class="analytics-value">{{ longestWorkingStreak }} days</span>
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <span class="block text-[0.8rem] text-slate-500 mb-1">Longest Working Streak</span>
+              <span class="block mt-1 text-[1.1rem] font-semibold text-slate-900">{{ longestWorkingStreak }} days</span>
             </div>
-            <div class="analytics-item">
-              <span class="label">Most Common Time In</span>
-              <span class="analytics-value">{{ mostCommonTimeIn }}</span>
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <span class="block text-[0.8rem] text-slate-500 mb-1">Most Common Time In</span>
+              <span class="block mt-1 text-[1.1rem] font-semibold text-slate-900">{{ mostCommonTimeIn }}</span>
             </div>
-            <div class="analytics-item">
-              <span class="label">Days with Low Hours</span>
-              <span class="analytics-value">{{ lowHourDaysCount }}</span>
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <span class="block text-[0.8rem] text-slate-500 mb-1">Days with Low Hours</span>
+              <span class="block mt-1 text-[1.1rem] font-semibold text-slate-900">{{ lowHourDaysCount }}</span>
             </div>
-            <div class="analytics-item">
-              <span class="label">Consistency Score</span>
-              <span class="analytics-value">{{ consistencyScore }}%</span>
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <span class="block text-[0.8rem] text-slate-500 mb-1">Consistency Score</span>
+              <span class="block mt-1 text-[1.1rem] font-semibold text-slate-900">{{ consistencyScore }}%</span>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="right-column">
-        <div class="card chart-card">
-          <div class="card-title-row">
-            <h3>Monthly Attendance</h3>
-            <span class="chip">{{ monthlyAttendance.monthLabel }}</span>
+      <section class="flex flex-col gap-4">
+        <div class="bg-white rounded-2xl shadow-[0_10px_25px_rgba(15,23,42,0.08)] p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="m-0 text-slate-900">Monthly Attendance</h3>
+            <span class="text-[0.75rem] px-2.5 py-1 rounded-full bg-blue-50 text-blue-700">{{ monthlyAttendance.monthLabel }}</span>
           </div>
-          <div class="simple-line-chart">
-            <div class="line-chart-grid">
-              <div
-                v-for="(week, index) in monthlyAttendance.weeks"
-                :key="week.label + index"
-                class="line-point-group"
-              >
-                <div class="line-point-wrapper">
-                  <div
-                    class="line-point"
-                    :style="{ height: week.percent + '%' }"
-                  ></div>
-                </div>
-                <span class="bar-label">{{ week.label }}</span>
-                <span class="bar-value">{{ week.daysPresent }} days</span>
-              </div>
-            </div>
-            <p class="chart-hint">Approximate visualization only. Detailed records are in the Attendance page.</p>
-          </div>
+          <apexchart
+            type="bar"
+            height="300"
+            :options="monthlyChartOptions"
+            :series="monthlyChartSeries"
+          ></apexchart>
         </div>
 
-        <div class="card calendar-card">
-          <div class="card-title-row">
-            <h3>Calendar View</h3>
-            <span class="chip">{{ calendarMonthLabel }}</span>
+        <div class="bg-white rounded-2xl shadow-[0_10px_25px_rgba(15,23,42,0.08)] p-6 flex flex-col gap-3">
+          <div class="flex justify-between items-center">
+            <h3 class="m-0 text-slate-900">Calendar View</h3>
+            <div class="flex items-center gap-2">
+              <button class="bg-slate-100 border border-slate-300 text-slate-700 px-2 py-1 rounded cursor-pointer font-bold text-sm transition-colors hover:bg-slate-200" @click="prevMonth">&lt;</button>
+              <span class="text-[0.75rem] px-2.5 py-1 rounded-full bg-blue-50 text-blue-700">{{ calendarMonthLabel }}</span>
+              <button class="bg-slate-100 border border-slate-300 text-slate-700 px-2 py-1 rounded cursor-pointer font-bold text-sm transition-colors hover:bg-slate-200" @click="nextMonth">&gt;</button>
+            </div>
           </div>
-          <div class="calendar-legend">
-            <span class="legend-item"><span class="legend-dot legend-present"></span>Present</span>
-            <span class="legend-item"><span class="legend-dot legend-absent"></span>Absent</span>
-            <span class="legend-item"><span class="legend-dot legend-holiday"></span>Holiday</span>
-            <span class="legend-item"><span class="legend-dot legend-weekend"></span>Weekend (Sunday)</span>
+          <div class="flex flex-wrap gap-3 text-[0.75rem] text-slate-500">
+            <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-green-500 inline-block"></span>Present</span>
+            <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>Holiday</span>
+            <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-yellow-500 inline-block"></span>Weekend (Sunday)</span>
           </div>
-          <div class="calendar-grid">
-            <div class="calendar-weekday" v-for="d in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']" :key="d">
+          <div class="grid grid-cols-7 gap-1 mt-1">
+            <div class="text-center text-[0.7rem] font-semibold text-slate-500" v-for="d in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']" :key="d">
               {{ d }}
             </div>
             <button
               v-for="(day, idx) in calendarWeeksFlat"
               :key="day.dateKey + '_' + idx"
               type="button"
-              class="calendar-day"
               :class="[
-                day.isCurrentMonth ? 'calendar-day--current-month' : 'calendar-day--other-month',
-                day.status === 'present' ? 'calendar-day--present' : '',
-                day.status === 'absent' ? 'calendar-day--absent' : '',
-                day.status === 'holiday' ? 'calendar-day--holiday' : '',
-                day.isWeekend && day.status === 'none' ? 'calendar-day--weekend' : '',
-                day.isToday ? 'calendar-day--today' : ''
+                'border-none rounded-lg p-1.5 text-[0.75rem] text-center cursor-pointer bg-slate-100 text-slate-900',
+                !day.isCurrentMonth ? 'opacity-40' : '',
+                day.status === 'present' ? '!bg-green-100 !text-green-800' : '',
+                day.status === 'holiday' ? '!bg-blue-100 !text-blue-800' : '',
+                day.isWeekend && day.status === 'none' ? '!bg-yellow-100 !text-yellow-800 border !border-yellow-400' : '',
+                day.isToday ? 'outline outline-2 outline-slate-600 outline-offset-1' : ''
               ]"
               @click="handleCalendarDayClick(day)"
             >
-              <span class="calendar-day-number">{{ day.dayOfMonth }}</span>
+              <span class="font-semibold">{{ day.dayOfMonth }}</span>
             </button>
           </div>
 
-          <div v-if="calendarSelectedDetails" class="calendar-details">
-            <h4>{{ calendarSelectedDetails.displayDate }}</h4>
-            <p class="calendar-details-status">Status: {{ calendarSelectedDetails.statusLabel }}</p>
-            <p v-if="calendarSelectedDetails.hasRecord">
+          <div v-if="calendarSelectedDetails" class="mt-3 pt-3 border-t border-slate-200 text-[0.8rem] text-slate-700">
+            <h4 class="m-0 mb-1 text-[0.9rem]">{{ calendarSelectedDetails.displayDate }}</h4>
+            <p class="m-0 mb-1">Status: {{ calendarSelectedDetails.statusLabel }}</p>
+            <p v-if="calendarSelectedDetails.hasRecord" class="m-0 leading-relaxed">
               Time In AM: {{ calendarSelectedDetails.timeInAM || '—' }}<br />
               Time Out AM: {{ calendarSelectedDetails.timeOutAM || '—' }}<br />
               Time In PM: {{ calendarSelectedDetails.timeInPM || '—' }}<br />
               Time Out PM: {{ calendarSelectedDetails.timeOutPM || '—' }}<br />
               Total Hours: {{ calendarSelectedDetails.totalHours }}
             </p>
-            <p v-else>
+            <p v-else class="m-0">
               No attendance record for this day.
             </p>
           </div>
@@ -214,8 +200,13 @@
 </template>
 
 <script>
+import VueApexCharts from 'vue3-apexcharts';
+
 export default {
   name: 'InternDashboardView',
+  components: {
+    apexchart: VueApexCharts,
+  },
   data() {
     return {
       studentName: '',
@@ -223,22 +214,63 @@ export default {
       assignedOffice: '',
       requiredHours: 0,
       completedHours: 0,
-      weeklyRenderedHours: [
-        { label: 'Mon', hours: 0, percent: 0 },
-        { label: 'Tue', hours: 0, percent: 0 },
-        { label: 'Wed', hours: 0, percent: 0 },
-        { label: 'Thu', hours: 0, percent: 0 },
-        { label: 'Fri', hours: 0, percent: 0 },
+      remainingHours: null,
+      chartOptions: {
+        chart: {
+          type: 'area',
+          height: 300,
+          stacked: true,
+          toolbar: { show: false }
+        },
+        colors: ['#008FFB', '#00E396', '#CED4DC'],
+        dataLabels: { enabled: false },
+        stroke: { curve: 'monotoneCubic' },
+        fill: {
+          type: 'gradient',
+          gradient: {
+            opacityFrom: 0.6,
+            opacityTo: 0.8,
+          }
+        },
+        legend: { position: 'top', horizontalAlign: 'left' },
+        xaxis: { categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+      },
+      chartSeries: [
+        { name: 'Normal Hours', data: [0, 0, 0, 0, 0] },
+        { name: 'Overtime', data: [0, 0, 0, 0, 0] },
       ],
       monthlyAttendance: {
         monthLabel: '',
-        weeks: [
-          { label: 'W1', daysPresent: 0, percent: 0 },
-          { label: 'W2', daysPresent: 0, percent: 0 },
-          { label: 'W3', daysPresent: 0, percent: 0 },
-          { label: 'W4', daysPresent: 0, percent: 0 },
-        ],
       },
+      monthlyChartOptions: {
+        chart: {
+          type: 'bar',
+          height: 300,
+          toolbar: { show: false }
+        },
+        plotOptions: {
+          bar: {
+            borderRadius: 4,
+            columnWidth: '40%',
+          }
+        },
+        colors: ['#0284c7'],
+        dataLabels: { enabled: false },
+        xaxis: { categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4'] },
+        yaxis: {
+          title: { text: 'Days Present' },
+          min: 0,
+          max: 7,
+          tickAmount: 7,
+          labels: { formatter: (val) => Math.round(val) }
+        },
+        tooltip: {
+          y: { formatter: (val) => val + ' days' }
+        }
+      },
+      monthlyChartSeries: [
+        { name: 'Days Present', data: [0, 0, 0, 0] }
+      ],
       averageTimeIn: '--:--',
       averageWorkingHoursPerDay: 0,
       attendanceRate: 0,
@@ -256,6 +288,7 @@ export default {
       calendarSelectedDate: null,
       calendarSelectedDetails: null,
       attendanceByDate: {},
+      currentCalendarDate: new Date(),
     }
   },
   created() {
@@ -296,6 +329,14 @@ export default {
       const clamped = Math.max(0, Math.min(raw, 100));
       return Math.round(clamped);
     },
+    remainingHoursDisplay() {
+      const v = this.remainingHours;
+      if (v == null || !Number.isFinite(v)) return '-';
+      const totalMinutes = Math.round(v * 60);
+      const h = Math.floor(totalMinutes / 60);
+      const m = totalMinutes % 60;
+      return `${h}h ${m}m`;
+    },
     calendarWeeksFlat() {
       return this.calendarWeeks.reduce((all, week) => all.concat(week.days), []);
     },
@@ -327,6 +368,10 @@ export default {
         const rawRequired = user.requiredHours || user.ojtRequiredHours || basicUser.requiredHours || basicUser.ojtRequiredHours;
         const parsedRequired = Number(rawRequired);
         this.requiredHours = Number.isFinite(parsedRequired) && parsedRequired > 0 ? parsedRequired : 486;
+
+        const rawRemaining = user.ojtRemainingHours;
+        const parsedRemaining = Number(rawRemaining);
+        this.remainingHours = Number.isFinite(parsedRemaining) && parsedRemaining >= 0 ? parsedRemaining : null;
 
         try {
           const attRes = await fetch(`http://localhost:3001/attendance/intern/history?internId=${encodeURIComponent(internId)}`);
@@ -363,16 +408,16 @@ export default {
     updateAttendanceAnalytics(records) {
       if (!Array.isArray(records) || !records.length) {
         this.completedHours = 0;
-        this.weeklyRenderedHours = this.weeklyRenderedHours.map(d => ({ ...d, hours: 0, percent: 0 }));
+        this.chartSeries = [
+          { name: 'Normal Hours', data: [0, 0, 0, 0, 0] },
+          { name: 'Overtime', data: [0, 0, 0, 0, 0] },
+        ];
         this.monthlyAttendance = {
           monthLabel: '',
-          weeks: [
-            { label: 'W1', daysPresent: 0, percent: 0 },
-            { label: 'W2', daysPresent: 0, percent: 0 },
-            { label: 'W3', daysPresent: 0, percent: 0 },
-            { label: 'W4', daysPresent: 0, percent: 0 },
-          ],
         };
+        this.monthlyChartSeries = [
+          { name: 'Days Present', data: [0, 0, 0, 0] }
+        ];
         this.averageTimeIn = '--:--';
         this.averageWorkingHoursPerDay = 0;
         this.attendanceRate = 0;
@@ -399,29 +444,59 @@ export default {
 
         const totalMinutesAM = typeof r.totalMinutesAM === 'number' ? r.totalMinutesAM : null;
         const totalMinutesPM = typeof r.totalMinutesPM === 'number' ? r.totalMinutesPM : null;
-        const totalMinutesFallback = typeof r.totalMinutes === 'number' ? r.totalMinutes : null;
 
-        let dayMinutes = 0;
-        if (totalMinutesAM != null || totalMinutesPM != null) {
-          dayMinutes = (totalMinutesAM || 0) + (totalMinutesPM || 0);
-        } else if (totalMinutesFallback != null) {
-          dayMinutes = totalMinutesFallback;
-        } else if (typeof r.totalHours === 'number' || typeof r.totalHours === 'string') {
-          const h = parseFloat(r.totalHours);
-          if (Number.isFinite(h) && h > 0) {
-            dayMinutes = Math.round(h * 60);
+        const tagAM = (r.tagAM || r.tagging || 'Normal Hours').trim();
+        const tagPM = (r.tagPM || r.tagging || 'Normal Hours').trim();
+        const fourHoursMinutes = 4 * 60;
+
+        let countedAM = 0;
+        let countedPM = 0;
+
+        if (r.validationStatusAM === 'Approved' && (r.timeInAM || r.timeOutAM)) {
+          if (tagAM === 'Overtime') {
+            countedAM = Math.max(0, totalMinutesAM || 0);
+          } else {
+            countedAM = Math.min(Math.max(0, totalMinutesAM || 0), fourHoursMinutes);
           }
         }
 
-        totalMinutesAll += Math.max(0, dayMinutes);
+        if (r.validationStatusPM === 'Approved' && (r.timeInPM || r.timeOutPM)) {
+          if (tagPM === 'Overtime') {
+            countedPM = Math.max(0, totalMinutesPM || 0);
+          } else {
+            countedPM = Math.min(Math.max(0, totalMinutesPM || 0), fourHoursMinutes);
+          }
+        }
+
+        const dayMinutes = countedAM + countedPM;
+        totalMinutesAll += dayMinutes;
 
         if (!byDate[dateStr]) {
           byDate[dateStr] = {
             minutes: 0,
+            normalMinutes: 0,
+            overtimeMinutes: 0,
             hasRecord: false,
           };
         }
-        byDate[dateStr].minutes += Math.max(0, dayMinutes);
+        
+        byDate[dateStr].minutes += dayMinutes;
+        
+        if (r.validationStatusAM === 'Approved' && (r.timeInAM || r.timeOutAM)) {
+          if (tagAM === 'Overtime') {
+            byDate[dateStr].overtimeMinutes += countedAM;
+          } else {
+            byDate[dateStr].normalMinutes += countedAM;
+          }
+        }
+        
+        if (r.validationStatusPM === 'Approved' && (r.timeInPM || r.timeOutPM)) {
+          if (tagPM === 'Overtime') {
+            byDate[dateStr].overtimeMinutes += countedPM;
+          } else {
+            byDate[dateStr].normalMinutes += countedPM;
+          }
+        }
         byDate[dateStr].hasRecord = true;
 
         const timeIn = r.timeInAM || r.timeInPM;
@@ -433,6 +508,9 @@ export default {
 
       const completedHoursRaw = totalMinutesAll / 60;
       this.completedHours = Math.round(completedHoursRaw * 10) / 10;
+      
+      // Update the remaining hours here to reflect real-time calculations from history
+      this.remainingHours = Math.max(0, this.requiredHours - this.completedHours);
 
       this.updateWeeklyRenderedHours(byDate);
       this.updateMonthlyAttendance(byDate);
@@ -478,26 +556,26 @@ export default {
       monday.setDate(today.getDate() + diffToMonday);
 
       const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-      const items = labels.map((label, index) => {
+      const normalData = [];
+      const overtimeData = [];
+
+      labels.forEach((label, index) => {
         const d = new Date(monday);
         d.setDate(monday.getDate() + index);
         const y = d.getFullYear();
         const m = (d.getMonth() + 1).toString().padStart(2, '0');
         const day = d.getDate().toString().padStart(2, '0');
         const key = `${y}-${m}-${day}`;
-        const info = byDate[key] || { minutes: 0 };
-        const hours = Math.max(0, info.minutes) / 60;
-        return { label, dateKey: key, hours };
+        const info = byDate[key] || { normalMinutes: 0, overtimeMinutes: 0 };
+        
+        normalData.push(Math.round((info.normalMinutes / 60) * 10) / 10);
+        overtimeData.push(Math.round((info.overtimeMinutes / 60) * 10) / 10);
       });
 
-      const maxHours = items.reduce((max, item) => Math.max(max, item.hours), 0);
-      const updated = items.map((item) => ({
-        label: item.label,
-        hours: Math.round(item.hours * 10) / 10,
-        percent: maxHours > 0 ? Math.round((item.hours / maxHours) * 100) : 0,
-      }));
-
-      this.weeklyRenderedHours = updated;
+      this.chartSeries = [
+        { name: 'Normal Hours', data: normalData },
+        { name: 'Overtime', data: overtimeData }
+      ];
     },
     updateMonthlyAttendance(byDate) {
       const today = new Date();
@@ -535,21 +613,32 @@ export default {
       });
 
       const maxDays = weeks.reduce((max, w) => Math.max(max, w.daysPresent), 0);
-      const normalizedWeeks = weeks.map((w) => ({
-        label: w.label,
-        daysPresent: w.daysPresent,
-        percent: maxDays > 0 ? Math.round((w.daysPresent / maxDays) * 100) : 0,
-      }));
+      
+      this.monthlyChartSeries = [
+        { name: 'Days Present', data: weeks.map(w => w.daysPresent) }
+      ];
 
       this.monthlyAttendance = {
         monthLabel,
-        weeks: normalizedWeeks,
       };
+    },
+    prevMonth() {
+      const d = new Date(this.currentCalendarDate);
+      d.setMonth(d.getMonth() - 1);
+      this.currentCalendarDate = d;
+      this.buildCalendar(this.attendanceByDate, this.attendanceByDate);
+    },
+    nextMonth() {
+      const d = new Date(this.currentCalendarDate);
+      d.setMonth(d.getMonth() + 1);
+      this.currentCalendarDate = d;
+      this.buildCalendar(this.attendanceByDate, this.attendanceByDate);
     },
     buildCalendar(byDate, rawMap) {
       const today = new Date();
-      const year = today.getFullYear();
-      const monthIndex = today.getMonth();
+      const calendarTarget = this.currentCalendarDate || today;
+      const year = calendarTarget.getFullYear();
+      const monthIndex = calendarTarget.getMonth();
       const firstOfMonth = new Date(year, monthIndex, 1);
       const startDayOfWeek = firstOfMonth.getDay();
       const calendarStart = new Date(year, monthIndex, 1 - startDayOfWeek);
@@ -578,14 +667,10 @@ export default {
               status = 'holiday';
             } else if (info.minutes > 0) {
               status = 'present';
-            } else if (!isFuture && !isSunday) {
-              status = 'absent';
             }
           } else if (!isFuture) {
             if (info.minutes > 0) {
               status = 'present';
-            } else if (!isSunday) {
-              status = 'absent';
             }
           }
 
@@ -602,10 +687,11 @@ export default {
       }
 
       this.calendarWeeks = weeks;
-      this.calendarMonthLabel = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      this.calendarMonthLabel = calendarTarget.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
+      // Only attempt to auto-select today if today is actually in the rendered month grid
       const todayEntry = weeks.flatMap((w) => w.days).find((day) => day.dateKey === nowDateKey);
-      if (todayEntry) {
+      if (todayEntry && calendarTarget.getMonth() === today.getMonth() && calendarTarget.getFullYear() === today.getFullYear()) {
         this.handleCalendarDayClick(todayEntry);
       } else {
         this.calendarSelectedDate = null;
@@ -619,13 +705,45 @@ export default {
 
       let statusLabel = 'No record';
       if (day.status === 'present') statusLabel = 'Present';
-      else if (day.status === 'absent') statusLabel = 'Absent';
       else if (day.status === 'holiday') statusLabel = 'Holiday';
 
       let totalHours = 0;
       if (rec) {
-        const totalMinutes = (rec.totalMinutesAM || 0) + (rec.totalMinutesPM || 0) || rec.totalMinutes || 0;
-        totalHours = Math.round((Math.max(0, totalMinutes) / 60) * 10) / 10;
+        const tag = (rec.tagAM || rec.tagPM || rec.tagging || 'Normal Hours').trim();
+        const eightHoursMinutes = 8 * 60;
+
+        const totalMinutesAM = typeof rec.totalMinutesAM === 'number' ? rec.totalMinutesAM : null;
+        const totalMinutesPM = typeof rec.totalMinutesPM === 'number' ? rec.totalMinutesPM : null;
+        const totalMinutesFallback = typeof rec.totalMinutes === 'number' ? rec.totalMinutes : null;
+
+        let rawTotal = 0;
+        if (totalMinutesAM != null || totalMinutesPM != null) {
+          rawTotal = (totalMinutesAM || 0) + (totalMinutesPM || 0);
+        } else if (totalMinutesFallback != null) {
+          rawTotal = totalMinutesFallback;
+        } else if (typeof rec.totalHours === 'number' || typeof rec.totalHours === 'string') {
+          const h = parseFloat(rec.totalHours);
+          if (Number.isFinite(h) && h > 0) {
+            rawTotal = Math.round(h * 60);
+          }
+        }
+
+        let dayMinutes = 0;
+        if (tag === 'Overtime') {
+          if (typeof rec.overtimeMinutes === 'number') {
+            dayMinutes = Math.max(0, rec.overtimeMinutes);
+          } else {
+            dayMinutes = Math.max(0, rawTotal - eightHoursMinutes);
+          }
+        } else {
+          if (typeof rec.normalCountMinutes === 'number') {
+            dayMinutes = Math.max(0, rec.normalCountMinutes);
+          } else {
+            dayMinutes = Math.min(Math.max(0, rawTotal), eightHoursMinutes);
+          }
+        }
+
+        totalHours = Math.round((dayMinutes / 60) * 10) / 10;
       }
 
       this.calendarSelectedDetails = {
@@ -800,577 +918,4 @@ export default {
 }
 </script>
 
-<style scoped>
-.intern-layout {
-  min-height: 100vh;
-  background: #f5f7fb;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
 
-.intern-header {
-  background: #1e293b;
-  color: #fff;
-  padding: 1rem 2rem;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.intern-header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.intern-header h1 {
-  margin: 0;
-  font-size: 1.4rem;
-}
-
-.intern-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.intern-nav a {
-  color: #e5e7eb;
-  text-decoration: none;
-  padding: 0.35rem 0.8rem;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  border: 1px solid transparent;
-}
-
-.intern-nav a.router-link-active {
-  background: #f97316;
-  color: #111827;
-  border-color: #f97316;
-}
-
-.intern-nav a:hover {
-  background: #111827;
-}
-
-.notif-wrapper {
-  position: relative;
-  cursor: pointer;
-}
-
-.notif-bell {
-  position: relative;
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  background: #0f172a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.bell-icon {
-  font-size: 16px;
-}
-
-.notif-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background: #ef4444;
-  color: #fef2f2;
-  border-radius: 999px;
-  font-size: 10px;
-  padding: 0 5px;
-}
-
-.notif-panel {
-  position: absolute;
-  right: 0;
-  margin-top: 0.5rem;
-  background: #ffffff;
-  color: #111827;
-  min-width: 220px;
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
-  padding: 0.75rem 0.9rem;
-  z-index: 20;
-}
-
-.notif-panel h3 {
-  margin: 0 0 0.5rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.notif-dropdown-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  font-size: 0.85rem;
-}
-
-.notif-dropdown-list li + li {
-  margin-top: 0.25rem;
-}
-
-.notif-empty {
-  margin: 0;
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-.dashboard-main {
-  max-width: 1100px;
-  margin: 2rem auto;
-  padding: 0 1rem 2rem;
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  gap: 1.5rem;
-}
-
-.card {
-  background: #ffffff;
-  border-radius: 1rem;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
-  padding: 1.5rem;
-}
-
-.today-status h2 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  color: #0f172a;
-}
-
-.status-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.label {
-  display: block;
-  font-size: 0.8rem;
-  color: #6b7280;
-  margin-bottom: 0.2rem;
-}
-
-.value {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.badge-present {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.btn {
-  flex: 1;
-  padding: 0.6rem 1rem;
-  border-radius: 999px;
-  border: none;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.btn-in {
-  background: #22c55e;
-  color: #052e16;
-}
-
-.btn-out {
-  background: #ef4444;
-  color: #7f1d1d;
-}
-
-.hint {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.summary-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-
-.summary-card h3 {
-  margin: 0 0 0.5rem;
-  font-size: 0.95rem;
-  color: #4b5563;
-}
-
-.summary-value {
-  margin: 0;
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #111827;
-}
-
-.summary-hours .label {
-  font-size: 0.78rem;
-}
-
-.summary-hours .value {
-  font-size: 1rem;
-}
-
-.hours-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-
-.left-column,
-.right-column {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.welcome-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.welcome-header {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-}
-
-.welcome-emoji {
-  font-size: 2rem;
-}
-
-.welcome-section h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  color: #0f172a;
-}
-
-.welcome-sub {
-  margin: 0.2rem 0 0;
-  font-size: 0.85rem;
-  color: #6b7280;
-}
-
-.student-info-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.progress-section {
-  margin-top: 0.5rem;
-}
-
-.progress-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.progress-text {
-  font-size: 0.8rem;
-  color: #4b5563;
-}
-
-.progress-bar {
-  width: 100%;
-  margin-top: 0.5rem;
-  height: 10px;
-  background: #e5e7eb;
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #22c55e, #16a34a);
-  border-radius: 999px;
-  transition: width 0.3s ease;
-}
-
-.chart-card {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.calendar-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.calendar-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  display: inline-block;
-}
-
-.legend-present {
-  background: #22c55e;
-}
-
-.legend-late {
-  background: #eab308;
-}
-
-.legend-absent {
-  background: #ef4444;
-}
-
-.legend-holiday {
-  background: #3b82f6;
-}
-
-.legend-weekend {
-  background: #eab308;
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.25rem;
-  margin-top: 0.25rem;
-}
-
-.calendar-weekday {
-  text-align: center;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #6b7280;
-}
-
-.calendar-day {
-  border: none;
-  border-radius: 0.5rem;
-  padding: 0.35rem 0.2rem;
-  font-size: 0.75rem;
-  text-align: center;
-  cursor: pointer;
-  background: #f3f4f6;
-  color: #111827;
-}
-
-.calendar-day--other-month {
-  opacity: 0.4;
-}
-
-.calendar-day--present {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.calendar-day--late {
-  background: #fef9c3;
-  color: #854d0e;
-}
-
-.calendar-day--absent {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.calendar-day--holiday {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-
-.calendar-day--weekend {
-  background: #fef9c3;
-  color: #854d0e;
-  border: 1px solid #facc15;
-}
-
-.calendar-day--today {
-  outline: 2px solid #4b5563;
-  outline-offset: 1px;
-}
-
-.calendar-day-number {
-  font-weight: 600;
-}
-
-.calendar-details {
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid #e5e7eb;
-  font-size: 0.8rem;
-  color: #374151;
-}
-
-.calendar-details h4 {
-  margin: 0 0 0.25rem;
-  font-size: 0.9rem;
-}
-
-.calendar-details-status {
-  margin: 0 0 0.25rem;
-}
-
-.card-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.chip {
-  font-size: 0.75rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  background: #eff6ff;
-  color: #1d4ed8;
-}
-
-.simple-bar-chart {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.75rem;
-  align-items: end;
-}
-
-.bar-item {
-  text-align: center;
-}
-
-.bar-wrapper {
-  height: 120px;
-  background: #f3f4f6;
-  border-radius: 999px;
-  padding: 4px;
-  display: flex;
-  align-items: flex-end;
-}
-
-.bar {
-  width: 100%;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #f97316, #ea580c);
-}
-
-.bar-label {
-  display: block;
-  margin-top: 0.35rem;
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.bar-value {
-  display: block;
-  font-size: 0.75rem;
-  color: #111827;
-}
-
-.simple-line-chart {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.line-chart-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.75rem;
-  align-items: end;
-}
-
-.line-point-group {
-  text-align: center;
-}
-
-.line-point-wrapper {
-  height: 120px;
-  border-radius: 999px;
-  padding: 4px;
-  background: #f3f4f6;
-  display: flex;
-  align-items: flex-end;
-}
-
-.line-point {
-  width: 100%;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #38bdf8, #0284c7);
-}
-
-.chart-hint {
-  margin: 0;
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.analytics-card h3 {
-  margin-top: 0;
-  margin-bottom: 0.75rem;
-  font-size: 1rem;
-}
-
-.analytics-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-}
-
-.analytics-item {
-  padding: 0.75rem 0.9rem;
-  border-radius: 0.75rem;
-  background: #f9fafb;
-}
-
-.analytics-value {
-  display: block;
-  margin-top: 0.2rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-@media (max-width: 900px) {
-  .dashboard-main {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
