@@ -7,6 +7,12 @@ import AdminStudentTaggingView from '../views/admin/AdminStudentTaggingView.vue'
 import AdminStudentCertificationView from '../views/admin/AdminStudentCertificationView.vue';
 import AdminStudentAttendanceValidationView from '../views/admin/AdminStudentAttendanceValidationView.vue';
 import AdminSettingsView from '../views/admin/AdminSettingsView.vue';
+import AdminDashboardView from '../views/admin/AdminDashboardView.vue';
+import AdminStaffAttendanceView from '../views/admin/AdminStaffAttendanceView.vue';
+import AdminStaffAttendanceValidation from '../views/admin/AdminStaffAttendanceValidation.vue';
+import AdminStaffLeave from '../views/admin/AdminStaffLeave.vue';
+import AdminArchive from '../views/admin/AdminArchive.vue';
+import AdminArchivedAttendanceView from '../views/admin/AdminArchivedAttendanceView.vue';
 import DashboardView from '../views/intern/DashboardView.vue';
 import TimeView from '../views/intern/TimeView.vue';
 import AttendanceView from '../views/intern/AttendanceView.vue';
@@ -16,6 +22,7 @@ import NotificationsView from '../views/intern/NotificationsView.vue';
 import StaffStatusView from '../views/intern/StaffStatusView.vue';
 import ClientLogBook from '../views/client/ClientLogBook.vue';
 import ClientEvaluation from '../views/client/ClientEvaluation.vue';
+import staffRoutes from './staff.routes.js';
 
 const routes = [
   {
@@ -57,10 +64,11 @@ const routes = [
     path: '/intern/settings',
     redirect: '/intern/profile'
   },
+  ...staffRoutes,
   {
-    path: '/staff/dashboard',
-    name: 'StaffDashboard',
-    component: StaffDashboardView,
+    path: '/admin/dashboard',
+    name: 'AdminDashboard',
+    component: AdminDashboardView,
   },
   {
     path: '/admin/manage-interns',
@@ -83,9 +91,34 @@ const routes = [
     component: AdminStudentAttendanceValidationView,
   },
   {
+    path: '/admin/manage-staff',
+    name: 'AdminStaffAttendance',
+    component: AdminStaffAttendanceView,
+  },
+  {
+    path: '/admin/staff-attendance-validation',
+    name: 'AdminStaffAttendanceValidation',
+    component: AdminStaffAttendanceValidation,
+  },
+  {
+    path: '/admin/staff-leave',
+    name: 'AdminStaffLeave',
+    component: AdminStaffLeave,
+  },
+  {
     path: '/admin/settings',
     name: 'AdminSettings',
     component: AdminSettingsView,
+  },
+  {
+    path: '/admin/archive',
+    name: 'AdminArchive',
+    component: AdminArchive,
+  },
+  {
+    path: '/admin/archive/attendance-logs',
+    name: 'AdminArchivedAttendance',
+    component: AdminArchivedAttendanceView,
   },
   {
     path: '/auth/admin/login',
@@ -117,5 +150,40 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
 });
+
+router.beforeEach((to) => {
+  if (to.name === 'Login') {
+    // Prefer unified storage key `user`, fall back to legacy `staffUser` / `internUser`
+    let unified = null
+    try {
+      unified = JSON.parse(localStorage.getItem('user') || 'null')
+    } catch {
+      unified = null
+    }
+
+    const resolved = unified?.user ? unified.user : unified
+    const role = resolved?.role || null
+
+    if (role === 'staff') {
+      return { name: 'StaffDashboard' }
+    }
+
+    if (role === 'admin') {
+      return { name: 'AdminDashboard' }
+    }
+
+    if (role === 'student' || role === 'intern') {
+      return { name: 'InternDashboard' }
+    }
+
+    const staffUser = localStorage.getItem('staffUser')
+    if (staffUser) return { name: 'StaffDashboard' }
+
+    const internUser = localStorage.getItem('internUser')
+    if (internUser) return { name: 'InternDashboard' }
+  }
+
+  return true
+})
 
 export default router;

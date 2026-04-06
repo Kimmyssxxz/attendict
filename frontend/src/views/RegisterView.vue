@@ -195,10 +195,16 @@
       </div>
 
       <!-- Left Side Illustration -->
-      <div class="hidden lg:flex lg:w-1/2 relative items-center justify-center  p-12">
-        <!-- Central Graphic area -->
-        <div class="relative w-[28rem] h-[28rem] flex items-center justify-center z-10">
-          <DotLottieVue style="height: 400px; width: 400px" autoplay loop src="https://lottie.host/b37b7748-1dc6-4cb4-8bf0-05a0b4f7e988/0t7UBpQlw6.lottie" />
+      <div class="hidden lg:flex lg:w-1/2 relative items-center justify-center bg-gray-50 p-12 overflow-hidden">
+        <!-- Decorative background blur/shapes -->
+        <div class="absolute inset-0 overflow-hidden">
+          <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+          <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-red-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+        </div>
+        
+        <!-- Central Circular Graphic area -->
+        <div class="relative w-[28rem] h-[28rem] bg-orange-50 rounded-full flex items-center justify-center shadow-sm border border-orange-100 z-10">
+          <DotLottieVue style="height: 500px; width: 500px" autoplay loop src="https://lottie.host/6ad83ae1-839d-473d-98ae-3918a1a36e92/vId07eA74k.json" />
         </div>
       </div>
 
@@ -498,7 +504,7 @@ export default {
 
         console.log('Registration saved with ID:', docRef.id);
         alert('Registration successful!');
-        // e.g. this.$router.push('/auth/intern/login');
+        this.$router.push({ name: 'Login' });
       } catch (error) {
         console.error('Registration error:', error);
         alert('Registration failed. Please check your inputs.');

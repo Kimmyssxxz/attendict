@@ -61,7 +61,15 @@ export default {
         }
 
         const data = await response.json();
-        console.log('Admin login successful:', data);
+        const user = data.user;
+        
+        if (user && (user.role === 'admin' || user.role === 'staff')) {
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('adminUser', JSON.stringify(user));
+          this.$router.push({ name: 'AdminDashboard' });
+        } else {
+          throw new Error('Unauthorized access');
+        }
       } catch (error) {
         console.error('Admin login error:', error);
         alert('Admin login failed. Please check your credentials.');

@@ -3,7 +3,9 @@ const cors = require('cors');
 const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 require('dotenv').config({ path: path.join(__dirname, '.env') });
+
 
 // Make sure you create backend/serviceAccountKey.json from Firebase Console
 let credential;
@@ -26,6 +28,7 @@ if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
   } else {
     console.error(
       'Missing Firebase Admin credentials. Provide GOOGLE_APPLICATION_CREDENTIALS, FIREBASE_SERVICE_ACCOUNT, or create backend/serviceAccountKey.json'
+
     );
     process.exit(1);
   }
@@ -37,7 +40,250 @@ const db = admin.firestore();
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+app.use((err, req, res, next) => {
+  if (err && err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ message: 'Invalid JSON body' });
+  }
+  return next(err);
+});
+
+const geoReverseCache = new Map();
+let lastGeoReverseFetchAt = 0;
+
+function normalizeGeoKey(lat, lon) {
+  const latNum = typeof lat === 'number' ? lat : parseFloat(lat);
+  const lonNum = typeof lon === 'number' ? lon : parseFloat(lon);
+  if (!Number.isFinite(latNum) || !Number.isFinite(lonNum)) return null;
+  return `${latNum.toFixed(6)},${lonNum.toFixed(6)}`;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchNominatimReverse(url) {
+  const r = await fetch(url, {
+    headers: {
+      'User-Agent': 'Attendict/1.0 (contact: attendict@example.com)',
+      Accept: 'application/json',
+      'Accept-Language': 'en',
+      Referer: 'http://localhost:3001/',
+    },
+  });
+  return r;
+}
+
+async function fetchJson(url, options = {}) {
+  const r = await fetch(url, {
+    headers: {
+      Accept: 'application/json',
+      'User-Agent': 'Attendict/1.0 (contact: attendict@example.com)',
+      ...(options.headers || {}),
+    },
+    ...options,
+  });
+  if (!r.ok) {
+    const text = await r.text().catch(() => '');
+    return { ok: false, status: r.status, text };
+  }
+  const json = await r.json().catch(() => null);
+  return { ok: true, status: r.status, json };
+}
+
+function normalizeReverseResponse({ displayName, lat, lon, raw, provider }) {
+  const addressFromObject = (obj) => {
+    if (!obj || typeof obj !== 'object') return null;
+    const parts = [
+      obj.house_number,
+      obj.road || obj.street || obj.pedestrian || obj.path,
+      obj.neighbourhood || obj.quarter,
+      obj.suburb || obj.village || obj.locality || obj.hamlet,
+      obj.city_district || obj.district,
+      obj.city || obj.town || obj.municipality,
+      obj.state || obj.region || obj.province,
+      obj.postcode,
+      obj.country
+    ].filter(Boolean);
+    const uniqueParts = [...new Set(parts)];
+    return uniqueParts.length ? uniqueParts.join(', ') : null;
+  };
+
+  let cleanAddress = null;
+  
+  if (provider === 'photon' && raw && Array.isArray(raw.features) && raw.features.length > 0) {
+    cleanAddress = addressFromObject(raw.features[0].properties);
+  } else if (raw && raw.address) {
+    cleanAddress = addressFromObject(raw.address);
+  } else if (raw && raw.properties) {
+    cleanAddress = addressFromObject(raw.properties);
+  } else {
+    cleanAddress = addressFromObject(raw);
+  }
+
+  // Use the cleanly rebuilt address first. If it fails, fallback to standard display_name.
+  let finalDisplayName = cleanAddress;
+
+  if (!finalDisplayName) {
+    finalDisplayName = typeof displayName === 'string' ? displayName.trim() : '';
+    // Basic fallback strip if present
+    if (raw && raw.address && raw.category) {
+      const poiCategories = ['amenity', 'building', 'shop', 'office', 'leisure', 'historic', 'tourism', 'craft'];
+      if (poiCategories.includes(raw.category)) {
+        const poiName = raw.name || raw.address[raw.category] || raw.address[raw.type] || raw.address.poi;
+        if (poiName && finalDisplayName.startsWith(poiName + ', ')) {
+          finalDisplayName = finalDisplayName.substring(poiName.length + 2).trim();
+        } else if (poiName === finalDisplayName) {
+          finalDisplayName = '';
+        }
+      }
+    }
+  }
+
+  if (!finalDisplayName) return null;
+  
+  return {
+    display_name: finalDisplayName,
+    lat: typeof lat === 'string' || typeof lat === 'number' ? String(lat) : undefined,
+    lon: typeof lon === 'string' || typeof lon === 'number' ? String(lon) : undefined,
+    raw: raw || null,
+    provider: provider || 'unknown',
+  };
+}
+
+app.get('/geo/reverse', async (req, res) => {
+  try {
+    const { lat, lon } = req.query;
+    if (!lat || !lon) return res.status(400).json({ error: 'Missing lat/lon' });
+
+    const key = normalizeGeoKey(lat, lon);
+    if (!key) return res.status(400).json({ error: 'Invalid lat/lon' });
+
+    const cached = geoReverseCache.get(key);
+    if (cached && cached.expiresAt > Date.now()) {
+      return res.json(cached.data);
+    }
+
+    const now = Date.now();
+    const waitMs = Math.max(0, 1100 - (now - lastGeoReverseFetchAt));
+    if (waitMs > 0) await sleep(waitMs);
+
+    const baseLat = encodeURIComponent(key.split(',')[0]);
+    const baseLon = encodeURIComponent(key.split(',')[1]);
+    const contactEmail = encodeURIComponent(process.env.NOMINATIM_EMAIL || 'attendict@example.com');
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${baseLat}&lon=${baseLon}&zoom=18&addressdetails=1&namedetails=1&email=${contactEmail}`;
+    const fallbackUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${baseLat}&lon=${baseLon}&zoom=18&addressdetails=1&email=${contactEmail}`;
+
+    let r = await fetchNominatimReverse(url);
+    lastGeoReverseFetchAt = Date.now();
+
+    if (!r.ok && (r.status === 403 || r.status === 429)) {
+      await sleep(2500);
+      r = await fetchNominatimReverse(url);
+      lastGeoReverseFetchAt = Date.now();
+    }
+
+    if (!r.ok && (r.status === 403 || r.status === 429)) {
+      await sleep(2500);
+      r = await fetchNominatimReverse(fallbackUrl);
+      lastGeoReverseFetchAt = Date.now();
+    }
+
+    if (!r.ok && r.status === 403) {
+      await sleep(3500);
+      r = await fetchNominatimReverse(fallbackUrl);
+      lastGeoReverseFetchAt = Date.now();
+    }
+
+    if (!r.ok) {
+      if (r.status === 403 || r.status === 429) {
+        const errors = [];
+
+        const photonUrl = `https://photon.komoot.io/reverse?lat=${baseLat}&lon=${baseLon}`;
+        const photon = await fetchJson(photonUrl);
+        if (photon.ok && photon.json) {
+          const feature = Array.isArray(photon.json?.features) ? photon.json.features[0] : null;
+          const label = feature?.properties?.name || feature?.properties?.label || null;
+          const normalized = normalizeReverseResponse({
+            displayName: label,
+            lat: key.split(',')[0],
+            lon: key.split(',')[1],
+            raw: photon.json,
+            provider: 'photon',
+          });
+          if (normalized) {
+            geoReverseCache.set(key, {
+              expiresAt: Date.now() + 1000 * 60 * 60,
+              data: normalized,
+            });
+            return res.json(normalized);
+          }
+          errors.push({ provider: 'photon', status: photon.status, details: 'No label in response' });
+        } else {
+          errors.push({ provider: 'photon', status: photon.status, details: photon.text });
+        }
+
+        const altUrl = `https://geocode.maps.co/reverse?lat=${baseLat}&lon=${baseLon}`;
+        const alt = await fetchJson(altUrl);
+        if (alt.ok && alt.json) {
+          const normalized = normalizeReverseResponse({
+            displayName: alt.json?.display_name || alt.json?.displayName || alt.json?.label || alt.json?.address,
+            lat: alt.json?.lat || key.split(',')[0],
+            lon: alt.json?.lon || key.split(',')[1],
+            raw: alt.json,
+            provider: 'geocode.maps.co',
+          });
+          if (normalized) {
+            geoReverseCache.set(key, {
+              expiresAt: Date.now() + 1000 * 60 * 60,
+              data: normalized,
+            });
+            return res.json(normalized);
+          }
+          errors.push({ provider: 'geocode.maps.co', status: alt.status, details: 'No display_name in response' });
+        } else {
+          errors.push({ provider: 'geocode.maps.co', status: alt.status, details: alt.text });
+        }
+
+        const text = await r.text();
+        return res.json({
+          error: 'Reverse geocoding blocked',
+          status: r.status,
+          details: text,
+          fallbacks: errors,
+        });
+      }
+
+      const text = await r.text();
+      return res.json({
+        error: 'Nominatim error',
+        status: r.status,
+        details: text,
+      });
+    }
+
+    const data = await r.json();
+
+    const normalizedData = normalizeReverseResponse({
+      displayName: data.display_name || data.name,
+      lat: data.lat || key.split(',')[0],
+      lon: data.lon || key.split(',')[1],
+      raw: data,
+      provider: 'nominatim'
+    }) || data;
+
+    geoReverseCache.set(key, {
+      expiresAt: Date.now() + 1000 * 60 * 60,
+      data: normalizedData,
+    });
+
+    return res.json(normalizedData);
+  } catch (e) {
+    return res.status(500).json({ error: e.message || 'Unknown error' });
+  }
+});
 
 // Simple startup test to verify Firestore credentials and connectivity
 (async () => {
@@ -70,57 +316,34 @@ function getTodayInfo() {
   return { now: phTime, dateString, timeString };
 }
 
+/**
+ * Ensures user's daily tagging fields are reset if the date has changed.
+ */
 async function ensureDailyUserTaggingReset(userId, userData, dateString) {
+  if (userData.lastTagResetDate === dateString) {
+    return { userData };
+  }
+
+  const updates = {
+    tagging: null,
+    todayAmTag: null,
+    todayPmTag: null,
+    lastTagResetDate: dateString
+  };
+
   try {
-    if (!userId || !userData || !dateString) return { changed: false, userData };
-
-    const lastReset = typeof userData.taggingLastResetDate === 'string' ? userData.taggingLastResetDate : '';
-    if (lastReset === dateString) {
-      return { changed: false, userData };
-    }
-
-    const updatePayload = {
-      tagging: 'Normal Hours',
-      todayAmTag: 'Normal Hours',
-      todayPmTag: 'Normal Hours',
-      taggingLastResetDate: dateString,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    };
-
-    await db.collection('users').doc(userId).set(updatePayload, { merge: true });
-
+    await db.collection('users').doc(userId).update(updates);
     return {
-      changed: true,
       userData: {
         ...userData,
-        ...updatePayload,
-      },
+        ...updates
+      }
     };
-  } catch (e) {
-    console.error('Failed daily tagging reset for user', userId, e);
-    return { changed: false, userData };
+  } catch (err) {
+    console.error(`Failed to reset daily tagging for user ${userId}:`, err);
+    // Return original data to avoid breaking the calling flow if update fails
+    return { userData };
   }
-}
-
-// Derive the effective day tagging based on day-level and per-session tags.
-// Priority:
-// 1) Explicit day-level tagging field
-// 2) If any session is tagged 'Overtime', treat the whole day as Overtime
-// 3) Otherwise fall back to any non-empty session tag, or 'Normal Hours'
-function getEffectiveDayTag(data) {
-  if (!data) return 'Normal Hours';
-
-  const dayTag = (data.tagging && typeof data.tagging === 'string' && data.tagging.trim()) || '';
-  if (dayTag) return dayTag.trim();
-
-  const amTag = (data.tagAM && typeof data.tagAM === 'string' && data.tagAM.trim()) || '';
-  const pmTag = (data.tagPM && typeof data.tagPM === 'string' && data.tagPM.trim()) || '';
-
-  if (amTag === 'Overtime' || pmTag === 'Overtime') return 'Overtime';
-  if (amTag) return amTag;
-  if (pmTag) return pmTag;
-
-  return 'Normal Hours';
 }
 
 function parseUserAgent(ua) {
@@ -181,6 +404,7 @@ async function createUserNotification(userId, { title, message, type, metadata }
   }
 }
 
+
 async function loginWithRole(req, res, expectedRole) {
   try {
     const { username, password } = req.body;
@@ -232,16 +456,28 @@ app.post('/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    if (!username || !password) {
+    const usernameNormalized = String(username || '').trim();
+    const passwordNormalized = String(password || '').trim();
+
+    if (!usernameNormalized || !passwordNormalized) {
+
       return res.status(400).json({ message: 'Username and password are required' });
     }
 
     const usersRef = db.collection('users');
-    const snapshot = await usersRef
-      .where('username', '==', username)
-      .where('password', '==', password)
-      .limit(1)
-      .get();
+    const usernameCandidates = Array.from(
+      new Set([
+        usernameNormalized,
+        usernameNormalized.toLowerCase(),
+        usernameNormalized.toUpperCase(),
+      ])
+    ).slice(0, 10);
+
+    let snapshot = await usersRef.where('username', 'in', usernameCandidates).limit(1).get();
+    if (snapshot.empty) {
+      snapshot = await usersRef.where('email', '==', usernameNormalized).limit(1).get();
+    }
+
 
     if (snapshot.empty) {
       return res.status(401).json({ message: 'Invalid username or password' });
@@ -250,7 +486,15 @@ app.post('/auth/login', async (req, res) => {
     const userDoc = snapshot.docs[0];
     const user = userDoc.data();
 
-    if (user.role !== 'student' && user.role !== 'staff') {
+    const storedPassword = String(user?.password || '').trim();
+    if (!storedPassword || storedPassword !== passwordNormalized) {
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
+    const normalizedRole = user.role === 'intern' ? 'student' : user.role;
+
+    if (normalizedRole !== 'student' && normalizedRole !== 'staff') {
+
       return res.status(403).json({ message: 'Only intern and staff accounts may log in here.' });
     }
 
@@ -259,7 +503,8 @@ app.post('/auth/login', async (req, res) => {
       user: {
         id: userDoc.id,
         username: user.username,
-        role: user.role,
+        role: normalizedRole,
+
         firstName: user.firstName,
         middleName: user.middleName,
         lastName: user.lastName,
@@ -268,6 +513,80 @@ app.post('/auth/login', async (req, res) => {
     });
   } catch (err) {
     console.error('Unified login error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Enroll fingerprint template for a staff user
+app.post('/staff/fingerprint/enroll', async (req, res) => {
+  try {
+    const { staffId, username, email, template } = req.body || {};
+
+    const staffIdNormalized = String(staffId || '').trim();
+    const usernameNormalized = String(username || '').trim();
+    const emailNormalized = String(email || '').trim();
+    const templateBase64 = String(template || '').trim();
+
+    if (!staffIdNormalized && !usernameNormalized && !emailNormalized) {
+      return res.status(400).json({ message: 'staffId or username/email is required' });
+    }
+
+    if (!templateBase64) {
+      return res.status(400).json({ message: 'template is required' });
+    }
+
+    let userRef = null;
+    let userSnap = null;
+
+    if (staffIdNormalized) {
+      userRef = db.collection('users').doc(staffIdNormalized);
+      userSnap = await userRef.get();
+    }
+
+    if (!userSnap || !userSnap.exists) {
+      const usersRef = db.collection('users');
+      let snap = null;
+
+      if (usernameNormalized) {
+        snap = await usersRef.where('username', '==', usernameNormalized).limit(1).get();
+      }
+
+      if ((!snap || snap.empty) && emailNormalized) {
+        snap = await usersRef.where('email', '==', emailNormalized).limit(1).get();
+      }
+
+      if (!snap || snap.empty) {
+        return res.status(404).json({ message: 'Staff user not found' });
+      }
+
+      userSnap = snap.docs[0];
+      userRef = userSnap.ref;
+    }
+
+    const user = userSnap.data() || {};
+    const roleNormalized = user.role === 'intern' ? 'student' : user.role;
+    if (roleNormalized !== 'staff') {
+      return res.status(403).json({ message: 'Only staff users can enroll fingerprint' });
+    }
+
+    await userRef.update({
+      fingerprintTemplateBase64: templateBase64,
+      fingerprintEnrolledAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    const resolvedStaffId = userSnap.id;
+
+    await createUserNotification(resolvedStaffId, {
+      title: 'Fingerprint Enrolled',
+      message: 'Your fingerprint has been enrolled successfully.',
+      type: 'fingerprint_enrollment',
+      metadata: {},
+    });
+
+    return res.json({ message: 'Fingerprint enrolled successfully', staffId: resolvedStaffId });
+  } catch (err) {
+    console.error('Fingerprint enrollment error:', err);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -326,6 +645,7 @@ app.post('/admin/attendance/update-tagging', async (req, res) => {
     return res.json({ message: 'Today attendance tagging updated', updated: true });
   } catch (err) {
     console.error('Admin update attendance tagging error:', err);
+
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -569,6 +889,7 @@ app.get('/notifications/user/:id', async (req, res) => {
         return tb - ta;
       });
 
+
     return res.json({
       message: 'Notifications fetched',
       notifications,
@@ -614,7 +935,8 @@ app.post('/auth/intern/register', async (req, res) => {
     const docRef = await db.collection('users').add({
       username,
       firstName,
-      middleName,
+      middleName: middleName || '',
+
       lastName,
       email,
       schoolOrUniversity,
@@ -625,6 +947,7 @@ app.post('/auth/intern/register', async (req, res) => {
       todayAmTag: 'Normal Hours',
       todayPmTag: 'Normal Hours',
       taggingLastResetDate: dateString,
+
       password,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -805,6 +1128,7 @@ app.get('/staff/:id/status', async (req, res) => {
   }
 });
 
+
 app.post('/attendance/intern/time-in', async (req, res) => {
   try {
     const { internId, location } = req.body;
@@ -910,12 +1234,14 @@ app.post('/attendance/intern/time-in', async (req, res) => {
         locationPM: session === 'PM' && location ? location : null,
         validationStatusAM: session === 'AM' && isAutoApprove ? 'Approved' : 'Pending',
         validationStatusPM: session === 'PM' && isAutoApprove ? 'Approved' : 'Pending',
+
         isLocked: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };
     } else {
       // Start from existing document and only update fields for the current session
+
       payload = {
         ...existing,
         internId,
@@ -951,6 +1277,7 @@ app.post('/attendance/intern/time-in', async (req, res) => {
         } else if (!existing.validationStatusPM) {
           payload.validationStatusPM = 'Pending';
         }
+
       }
     }
 
@@ -974,6 +1301,7 @@ app.post('/attendance/intern/time-in', async (req, res) => {
       tagging: payload.tagging || null,
       tagAM: payload.tagAM || null,
       tagPM: payload.tagPM || null,
+
       locationAM: payload.locationAM || null,
       locationPM: payload.locationPM || null,
       isLocked: !!payload.isLocked,
@@ -996,6 +1324,7 @@ app.post('/attendance/intern/time-in', async (req, res) => {
     await createUserNotification(internId, {
       title: 'Time In Recorded',
       message: `You timed in for ${session} on ${fDate} at ${fTime}.`,
+
       type: 'time_in',
       metadata: {
         date: dateString,
@@ -1004,6 +1333,7 @@ app.post('/attendance/intern/time-in', async (req, res) => {
         attendanceDocId: docId,
         status: statusForSession,
         timeInLocation,
+
       },
     });
 
@@ -1038,6 +1368,7 @@ app.post('/attendance/intern/time-out', async (req, res) => {
 
     const docId = `${internId}_${dateString}`;
     const attendanceRef = db.collection('intern_attendance').doc(docId);
+
     const snapshot = await attendanceRef.get();
 
     if (!snapshot.exists) {
@@ -1120,6 +1451,7 @@ app.post('/attendance/intern/time-out', async (req, res) => {
     updated.countedTotalMinutes = countedTotalMinutes;
     updated.countedTotalHours = (countedTotalMinutes / 60).toFixed(2);
 
+
     await attendanceRef.set(updated, { merge: true });
 
     // Determine status for the session from existing doc plus our updates
@@ -1142,6 +1474,7 @@ app.post('/attendance/intern/time-out', async (req, res) => {
       totalHours: merged.totalHours || null,
       countedTotalMinutes: merged.countedTotalMinutes ?? null,
       countedTotalHours: merged.countedTotalHours || null,
+
       statusAM: merged.statusAM || null,
       statusPM: merged.statusPM || null,
       locationAM: merged.locationAM || null,
@@ -1157,6 +1490,7 @@ app.post('/attendance/intern/time-out', async (req, res) => {
     await createUserNotification(internId, {
       title: 'Time Out Recorded',
       message: `You timed out for ${session} on ${fDate} at ${fTime}.`,
+
       type: 'time_out',
       metadata: {
         date: dateString,
@@ -1519,6 +1853,7 @@ app.put('/users/:id/info', async (req, res) => {
       assignedSupervisor,
       workSchedule,
       workDays,
+
     } = req.body;
 
     const userRef = db.collection('users').doc(id);
@@ -1556,6 +1891,7 @@ app.put('/users/:id/info', async (req, res) => {
     if (typeof assignedSupervisor === 'string') updatePayload.assignedSupervisor = assignedSupervisor;
     if (typeof workSchedule === 'string') updatePayload.workSchedule = workSchedule;
     if (typeof workDays === 'string') updatePayload.workDays = workDays;
+
 
     if (Object.keys(updatePayload).length === 0) {
       return res.status(400).json({ message: 'No updatable fields provided' });
@@ -1644,6 +1980,7 @@ app.get('/attendance/intern/today', async (req, res) => {
     const { dateString } = getTodayInfo();
     const docId = `${internId}_${dateString}`;
     const attendanceRef = db.collection('intern_attendance').doc(docId);
+
     const snapshot = await attendanceRef.get();
 
     if (!snapshot.exists) {
@@ -1676,6 +2013,7 @@ app.get('/attendance/intern/today', async (req, res) => {
       rejectReasonAM: data.rejectReasonAM || null,
       validationStatusPM: data.validationStatusPM || null,
       rejectReasonPM: data.rejectReasonPM || null,
+
       isLocked: !!data.isLocked,
     };
 
@@ -1700,6 +2038,7 @@ app.get('/attendance/intern/history', async (req, res) => {
 
     const snap = await db
       .collection('intern_attendance')
+
       .where('internId', '==', internId)
       .get();
 

@@ -10,23 +10,27 @@
   },
   "dependencies": {
     "@lottiefiles/dotlottie-vue": "^0.11.3",
-    "apexcharts": "^5.10.1",
+    "@tailwindcss/vite": "^4.2.1",
+    "apexcharts": "^5.10.3",
     "firebase": "^12.9.0",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
     "leaflet": "^1.9.4",
     "lucide-vue-next": "^1.0.0",
+    "pinia": "^3.0.4",
     "vue": "^3.5.27",
     "vue-router": "^4.6.4",
-    "vue3-apexcharts": "^1.11.1"
+    "vue3-apexcharts": "^1.11.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@iconify-json/basil": "^1.2.4",
     "@iconify/tailwind": "^1.2.0",
+    "@tailwindcss/postcss": "^4.2.1",
     "@vitejs/plugin-vue": "^6.0.3",
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17",
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.1",
     "vite": "^7.3.1",
     "vite-plugin-vue-devtools": "^8.0.5"
   },
