@@ -1,76 +1,7 @@
 <template>
   <div class="flex h-screen bg-[#f5f5f5] font-sans antialiased text-gray-900">
     <!-- Sidebar -->
-    <aside class="w-[260px] bg-white/95 backdrop-blur-xl border-r border-gray-200 py-8 px-5 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10">
-      <div class="flex justify-between items-center mb-10 px-2">
-        <div class="text-2xl font-extrabold tracking-tight bg-gradient-to-br from-blue-900 to-blue-800 bg-clip-text text-transparent">
-          <span class="text-blue-900">ATTEND</span><span class="text-blue-800">ICT</span>
-        </div>
-      </div>
-
-      <nav class="flex flex-col gap-2">
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'dashboard' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffDashboard', 'dashboard')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          <span>Dashboard</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'attendance' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffAttendance', 'attendance')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="1"></circle>
-            <path d="M12 1v6m0 6v6"></path>
-            <path d="M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24"></path>
-            <path d="M1 12h6m6 0h6"></path>
-            <path d="M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"></path>
-          </svg>
-          <span>My Attendance</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'attendance-logs' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffAttendanceLogs', 'attendance-logs')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          <span>Attendance Logs</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'monthly-summary' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffMonthlySummary', 'monthly-summary')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-          </svg>
-          <span>Monthly Summary</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'fingerprint' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffFingerprintEnrollment', 'fingerprint')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 11a2 2 0 0 0-2 2v2"></path>
-            <path d="M12 9a4 4 0 0 0-4 4v2"></path>
-            <path d="M12 7a6 6 0 0 0-6 6v2"></path>
-            <path d="M12 5a8 8 0 0 0-8 8v2"></path>
-            <path d="M12 11a2 2 0 0 1 2 2v2"></path>
-            <path d="M12 9a4 4 0 0 1 4 4v2"></path>
-          </svg>
-          <span>Fingerprint Enrollment</span>
-        </div>
-      </nav>
-    </aside>
+    <StaffSidebar activeNav="attendance" />
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col relative min-w-0 overflow-hidden z-0">
@@ -130,7 +61,7 @@
       </header>
 
       <!-- Page Content -->
-      <div class="flex-1 overflow-y-auto p-4 sm:p-8">
+      <div class="flex-1 overflow-y-auto p-4 sm:p-8 pb-24 md:pb-8">
         <div class="max-w-[1400px] mx-auto space-y-8">
           
           <!-- Status and Actions Grid -->
@@ -149,8 +80,7 @@
                        'bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-emerald-500/30': selectedStatus === 'At Office',
                        'bg-gradient-to-br from-blue-400 to-blue-600 shadow-blue-500/30': selectedStatus === 'On Field',
                        'bg-gradient-to-br from-purple-400 to-purple-600 shadow-purple-500/30': selectedStatus === 'Travel',
-                       'bg-gradient-to-br from-orange-400 to-orange-600 shadow-orange-500/30': selectedStatus === 'Leave',
-                       'bg-gradient-to-br from-red-400 to-red-600 shadow-red-500/30': selectedStatus === 'Absent'
+                       'bg-gradient-to-br from-orange-400 to-orange-600 shadow-orange-500/30': selectedStatus === 'Leave'
                      }">
                   <div class="absolute inset-0 rounded-2xl animate-ping opacity-20 bg-white"></div>
                   <span class="relative z-10 filter drop-shadow-md">{{ getStatusEmoji(selectedStatus) }}</span>
@@ -166,8 +96,7 @@
                             'bg-emerald-500': selectedStatus === 'At Office',
                             'bg-blue-500': selectedStatus === 'On Field',
                             'bg-purple-500': selectedStatus === 'Travel',
-                            'bg-orange-500': selectedStatus === 'Leave',
-                            'bg-red-500': selectedStatus === 'Absent'
+                            'bg-orange-500': selectedStatus === 'Leave'
                           }"></span>
                     {{ selectedStatus }}
                   </span>
@@ -182,7 +111,6 @@
                       <option value="On Field">📍 On Field</option>
                       <option value="Travel">✈️ Travel</option>
                       <option value="Leave">🏖️ Leave</option>
-                      <option value="Absent">❌ Absent</option>
                     </select>
                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
                       <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -212,33 +140,48 @@
                 </div>
               </div>
 
-              <!-- Biometric Section -->
+              <!-- RFID Section -->
               <div v-if="selectedStatus === 'At Office'" class="flex-1 flex flex-col bg-slate-50 rounded-2xl p-6 border border-slate-100">
                 <div class="flex flex-col items-center flex-1 justify-center relative py-6">
                   
                   <!-- Scanner Visual -->
-                  <div class="relative w-32 h-32 mb-8 user-select-none touch-none">
+                  <div class="relative w-32 h-32 mb-6 user-select-none touch-none">
                     <!-- Scanner Background -->
                     <div class="absolute inset-0 rounded-3xl bg-white shadow-xl border border-blue-50 flex items-center justify-center transform transition-transform duration-300"
                          :class="{ 'scale-95 shadow-inner': isScanning }">
                       
-                      <!-- Fingerprint Icon -->
-                      <div class="text-6xl filter drop-shadow-md transition-all duration-300"
-                           :class="isScanning ? 'scale-110 opacity-50' : 'opacity-100 hover:scale-105 hover:animate-pulse'">
-                        👆
+                      <!-- RFID Icon -->
+                      <div class="w-full h-full p-2 flex items-center justify-center transition-all duration-300"
+                           :class="isScanning ? 'scale-110 opacity-50' : 'opacity-100 hover:scale-105'">
+                        <iframe src="https://lottie.host/embed/06249617-eef8-4e7e-8296-a5e249383bca/GVeOismIuA.lottie" style="pointer-events: none; border: none;" width="100%" height="100%"></iframe>
                       </div>
 
                       <!-- Scanning Line Animation -->
                       <div v-if="isScanning" class="absolute left-0 right-0 h-1 bg-blue-500 shadow-[0_0_15px_3px_rgba(59,130,246,0.6)] animate-[scan_2s_ease-in-out_infinite]"></div>
                       
                       <!-- Scanning Glow -->
-                      <div v-if="isScanning" class="absolute inset-0 rounded-3xl box-shadow-[inset_0_0_20px_rgba(59,130,246,0.3)] animate-pulse"></div>
+                      <div v-if="isScanning" class="absolute inset-0 rounded-3xl box-shadow-[inset_0_0_20px_rgba(59,130,246,0.3)] animate-pulse border-blue-400"></div>
                     </div>
                   </div>
 
-                  <div class="text-center w-full max-w-sm mb-8">
-                    <h4 class="text-lg font-bold text-gray-900 mb-2">Biometric Verification</h4>
+                  <!-- Device Connected Indicator -->
+                  <div class="mb-4 flex items-center gap-2 text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-100 shadow-sm">
+                    <span class="flex h-2 w-2 relative">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                    </span>
+                    Waiting for RFID scan...
+                  </div>
+
+                  <div class="text-center w-full max-w-sm mb-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-2">RFID Verification</h4>
                     <p class="text-sm text-gray-600 min-h-[40px] px-4">{{ getBiometricMessage() }}</p>
+                    
+                    <div class="mt-4 w-full">
+                      <input type="password" id="rfid-attendance-input" placeholder="" 
+                             class="w-full text-center px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none shadow-inner transition-all" 
+                             @keyup.enter="checkRfidAndAction" autofocus />
+                    </div>
                     
                     <div v-if="todayLogs.length > 0" class="mt-4 inline-flex flex-col items-center bg-white px-5 py-2.5 rounded-xl text-sm font-medium text-gray-700 shadow-sm border border-gray-100">
                       <span class="text-blue-700 font-bold mb-0.5">{{ getCurrentAttendanceStatus() }}</span>
@@ -246,7 +189,7 @@
                     </div>
                   </div>
 
-                  <button @click="handleBiometricAction" 
+                  <button @click="checkRfidAndAction" 
                           :disabled="isScanning || staffAttendanceStore.loading" 
                           class="w-full sm:w-auto min-w-[200px] h-14 rounded-2xl flex items-center justify-center gap-3 px-8 text-base font-bold text-white shadow-lg shadow-blue-500/30 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed group relative overflow-hidden"
                           :class="isScanning ? 'bg-blue-400' : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/40'">
@@ -256,8 +199,13 @@
                     
                     <div v-if="staffAttendanceStore.loading" class="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
                     <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                      <rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect>
+                      <line x1="7" y1="15" x2="7.01" y2="15"></line>
+                      <line x1="7" y1="9" x2="7.01" y2="9"></line>
+                      <line x1="11" y1="15" x2="11.01" y2="15"></line>
+                      <line x1="11" y1="9" x2="11.01" y2="9"></line>
+                      <line x1="15" y1="15" x2="15.01" y2="15"></line>
+                      <line x1="15" y1="9" x2="15.01" y2="9"></line>
                     </svg>
                     <span class="relative z-10 tracking-wide">{{ isScanning ? 'Scanning...' : (staffAttendanceStore.loading ? 'Loading...' : getBiometricButtonText()) }}</span>
                   </button>
@@ -368,15 +316,15 @@
                 </div>
               </div>
 
-              <!-- Leave/Absent Section -->
+              <!-- Leave Section -->
               <div v-else class="flex-1 flex flex-col bg-gray-50 rounded-2xl p-6 border border-gray-200">
                 <div class="flex flex-col items-center justify-center flex-1 text-center py-8">
                   <div class="text-7xl mb-6 filter drop-shadow-md opacity-90 animate-[bounce_3s_ease-in-out_infinite]">
-                    {{ selectedStatus === 'Leave' ? '🏖️' : '❌' }}
+                    🏖️
                   </div>
-                  <h4 class="text-2xl font-bold text-gray-900 mb-2">{{ selectedStatus }} Mode</h4>
+                  <h4 class="text-2xl font-bold text-gray-900 mb-2">Leave Mode</h4>
                   <p class="text-gray-500 max-w-[250px] mx-auto mb-8">
-                    {{ selectedStatus === 'Leave' ? 'Enjoy your time off! Your status has been noted.' : 'Contact your supervisor if this absence is incorrect.' }}
+                    Enjoy your time off! Your status has been noted.
                   </p>
                   
                   <!-- Leave Duration Section -->
@@ -388,12 +336,12 @@
                     <div class="grid grid-cols-2 gap-3">
                       <div class="space-y-1">
                         <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Start Date</label>
-                        <input type="date" v-model="leaveStartDate" @change="handleLeaveDurationChange" 
+                        <input type="date" v-model="leaveStartDate" 
                                class="w-full bg-white border border-purple-100 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all" />
                       </div>
                       <div class="space-y-1">
                         <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">End Date</label>
-                        <input type="date" v-model="leaveEndDate" @change="handleLeaveDurationChange" 
+                        <input type="date" v-model="leaveEndDate" 
                                class="w-full bg-white border border-purple-100 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all" />
                       </div>
                     </div>
@@ -406,46 +354,56 @@
                       <h4 class="font-bold text-gray-900 text-sm">Supporting Document</h4>
                     </div>
                     
-                    <div v-if="!leaveDocumentUrl" class="relative group">
-                      <input type="file" @change="handleLeaveFileUpload" class="hidden" id="leave-doc-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                    <div v-if="leaveDocumentUrls.length === 0" class="relative group">
+                      <input type="file" @change="handleLeaveFileUpload" class="hidden" id="leave-doc-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple />
                       <label for="leave-doc-input" class="flex flex-col items-center justify-center py-6 px-4 border-2 border-dashed border-blue-200 rounded-xl bg-white cursor-pointer hover:border-blue-400 group-hover:bg-blue-50/30 transition-all">
                         <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-2">
                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                         </div>
-                        <p class="text-xs font-bold text-gray-700">Upload Leave Document</p>
-                        <p class="text-[10px] text-gray-500 mt-1">PDF, DOC, JPG or PNG (Max 5MB)</p>
+                        <p class="text-xs font-bold text-gray-700">Upload Leave Documents</p>
+                        <p class="text-[10px] text-gray-500 mt-1">PDF, DOC, JPG or PNG (Max 5MB each)</p>
                       </label>
                     </div>
 
-                    <div v-else class="flex items-center justify-between p-3 bg-white rounded-xl border border-blue-100 shadow-sm animate-[fadeIn_0.3s_ease-out]">
-                      <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center shrink-0">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div v-else class="space-y-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
+                      <div v-for="(url, index) in leaveDocumentUrls" :key="index" class="flex items-center justify-between p-3 bg-white rounded-xl border border-blue-100 shadow-sm animate-[fadeIn_0.3s_ease-out]">
+                        <div class="flex items-center gap-3 min-w-0">
+                          <div class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center shrink-0">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                          </div>
+                          <div class="min-w-0">
+                            <p class="text-[10px] font-bold text-gray-900 truncate">Doc {{ index + 1 }}</p>
+                            <a :href="url" target="_blank" class="text-[9px] text-blue-600 font-medium hover:underline flex items-center gap-1">
+                              View File
+                              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                            </a>
+                          </div>
                         </div>
-                        <div class="min-w-0">
-                          <p class="text-xs font-bold text-gray-900 truncate">Document Uploaded</p>
-                          <a :href="leaveDocumentUrl" target="_blank" class="text-[10px] text-blue-600 font-medium hover:underline flex items-center gap-1">
-                            View File
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                          </a>
-                        </div>
+                        <button @click="removeLeaveDocument(index)" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
                       </div>
-                      <button @click="clearLeaveDocument" class="p-2 text-gray-400 hover:text-red-500 transition-colors">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      
+                      <button @click.stop 
+                              class="w-full relative py-2 px-4 border border-dashed border-blue-200 rounded-lg bg-blue-50/30 text-[10px] font-bold text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-2">
+                        <input type="file" @change="handleLeaveFileUpload" class="absolute inset-0 opacity-0 cursor-pointer" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple />
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Add more files
                       </button>
                     </div>
-                  </div>
 
-                  <button v-if="selectedStatus === 'Absent'" class="px-6 py-2.5 bg-white text-gray-700 font-bold rounded-xl border border-gray-300 shadow-sm hover:bg-gray-50 hover:text-gray-900 transition-colors flex items-center gap-2">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                      <polyline points="14,2 14,8 20,8"></polyline>
-                      <line x1="16" y1="13" x2="8" y2="13"></line>
-                      <line x1="16" y1="17" x2="8" y2="17"></line>
-                    </svg>
-                    Request Modification
-                  </button>
+                    <!-- Submit Leave Button -->
+                    <div v-if="selectedStatus === 'Leave'" class="w-full max-w-sm mt-6">
+                      <button @click="submitLeaveDetails" 
+                              :disabled="submittingLeave || !leaveStartDate || !leaveEndDate"
+                              class="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-800 text-white font-bold shadow-lg shadow-blue-900/20 hover:shadow-blue-900/40 hover:-translate-y-1 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none">
+                        <svg v-if="submittingLeave" class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>{{ submittingLeave ? 'Submitting...' : 'Submit Leave Request' }}</span>
+                      </button>
+                    </div>
                 </div>
+              </div>
               </div>
 
             </div>
@@ -663,6 +621,7 @@
 
 <script setup>
   import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+  import StaffSidebar from './StaffSidebar.vue'
   import { useRouter } from 'vue-router'
   import { useStaffAttendanceStore } from '../../stores/staffAttendanceStore.js'
   import { db } from '../../firebase.js'
@@ -787,6 +746,7 @@
   const currentDate = ref('')
   const currentAttendanceId = ref(null)
   const isScanning = ref(false)
+  const submittingLeave = ref(false)
   const videoElement = ref(null)
   const canvasElement = ref(null)
 
@@ -819,8 +779,7 @@
       'At Office': 'status-office',
       'On Field': 'status-field',
       'Travel': 'status-travel',
-      'Leave': 'status-leave',
-      'Absent': 'status-absent'
+      'Leave': 'status-leave'
     }
     return statusClasses[selectedStatus.value] || 'status-office'
   })
@@ -840,6 +799,14 @@
 
   const leaveDocumentUrl = computed(() => {
     return staffAttendanceStore.getCurrentStaffAttendance?.leaveDocumentUrl || null
+  })
+
+  const leaveDocumentUrls = computed(() => {
+    const urls = staffAttendanceStore.getCurrentStaffAttendance?.leaveDocumentUrls
+    if (Array.isArray(urls)) return urls
+    // Fallback for legacy data
+    const single = staffAttendanceStore.getCurrentStaffAttendance?.leaveDocumentUrl
+    return single ? [single] : []
   })
 
   const leaveStartDate = ref('')
@@ -905,8 +872,7 @@
       'At Office': '🏢',
       'On Field': '📍',
       'Travel': '✈️',
-      'Leave': '🏖️',
-      'Absent': '❌'
+      'Leave': '🏖️'
     }
     return emojis[status] || '🏢'
   }
@@ -938,7 +904,7 @@
     showNotification(`Status changed to ${selectedStatus.value}`, 'info')
     if (selectedStatus.value === 'On Field' || selectedStatus.value === 'Travel') {
       getUserLocation()
-    } else if (selectedStatus.value === 'Leave' || selectedStatus.value === 'Absent') {
+    } else if (selectedStatus.value === 'Leave') {
       try {
         const ensuredStaffId = staffId.value || (await staffAttendanceStore.ensureCurrentStaffId())
         const res = await staffAttendanceStore.createOrGetDailyAttendance(ensuredStaffId)
@@ -952,10 +918,9 @@
   }
 
   const handleLeaveFileUpload = async (event) => {
-    const file = event.target.files[0]
-    if (!file) return
+    const files = Array.from(event.target.files)
+    if (files.length === 0) return
 
-    // Basic validation
     const allowedTypes = [
       'application/pdf', 
       'image/jpeg', 
@@ -963,52 +928,132 @@
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ]
-    if (!allowedTypes.includes(file.type)) {
-      openModal('Invalid File', 'Please upload a PDF, DOC, JPG, or PNG file.', 'error')
-      return
-    }
 
-    if (file.size > 5 * 1024 * 1024) {
-      openModal('File Too Large', 'File size should be less than 5MB.', 'error')
+    // Filter and validate files
+    const validFiles = files.filter(file => {
+      if (!allowedTypes.includes(file.type)) {
+        showNotification(`Skipped ${file.name}: Invalid file type.`, 'warning')
+        return false
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification(`Skipped ${file.name}: File too large (>5MB).`, 'warning')
+        return false
+      }
+      return true
+    })
+
+    if (validFiles.length === 0) return
+
+    try {
+      showNotification(`Uploading ${validFiles.length} file(s)...`)
+      
+      const ensuredStaffId = staffId.value || (await staffAttendanceStore.ensureCurrentStaffId())
+      const res = await staffAttendanceStore.createOrGetDailyAttendance(ensuredStaffId)
+      
+      if (!res.success || !res.data?.id) {
+         showNotification('Failed to find daily attendance record.', 'error')
+         return
+      }
+      
+      const attendanceId = res.data.id
+      const uploadedUrls = [...leaveDocumentUrls.value]
+
+      for (const file of validFiles) {
+        const url = await new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = async (e) => {
+            const base64Data = e.target.result
+            const filename = `leave_${attendanceId}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${file.name.split('.').pop()}`
+            const downloadUrl = await staffAttendanceStore.uploadLeaveDocument(base64Data, filename)
+            resolve(downloadUrl)
+          }
+          reader.onerror = reject
+          reader.readAsDataURL(file)
+        })
+
+        if (url) {
+          uploadedUrls.push(url)
+        }
+      }
+
+      const updateRes = await staffAttendanceStore.updateLeaveStatus(
+        attendanceId, 
+        uploadedUrls,
+        leaveStartDate.value,
+        leaveEndDate.value
+      )
+
+      if (updateRes.success) {
+        openModal('Success', `${validFiles.length} document(s) uploaded successfully!`, 'success')
+      } else {
+        showNotification(updateRes.error || 'Failed to update leave status.', 'error')
+      }
+    } catch (error) {
+      console.error('File upload error:', error)
+      showNotification('An error occurred during file upload.', 'error')
+    }
+  }
+
+  const removeLeaveDocument = async (index) => {
+    const attendance = staffAttendanceStore.getCurrentStaffAttendance
+    if (!attendance?.id) return
+
+    try {
+      const updatedUrls = [...leaveDocumentUrls.value]
+      updatedUrls.splice(index, 1)
+
+      const res = await staffAttendanceStore.updateLeaveStatus(
+        attendance.id, 
+        updatedUrls,
+        leaveStartDate.value,
+        leaveEndDate.value
+      )
+
+      if (res.success) {
+        showNotification('Document removed.', 'info')
+      }
+    } catch (error) {
+      showNotification('Failed to remove document.', 'error')
+    }
+  }
+
+  const submitLeaveDetails = async () => {
+    if (!leaveStartDate.value || !leaveEndDate.value) {
+      openModal('Missing Dates', 'Please select both start and end dates for your leave.', 'warning')
       return
     }
 
     try {
-      showNotification('Uploading leave document...')
-      const reader = new FileReader()
-      reader.onload = async (e) => {
-        const base64Data = e.target.result
-        const ensuredStaffId = staffId.value || (await staffAttendanceStore.ensureCurrentStaffId())
-        const res = await staffAttendanceStore.createOrGetDailyAttendance(ensuredStaffId)
-        if (!res.success || !res.data?.id) {
-           showNotification('Failed to find daily attendance record.', 'error')
-           return
-        }
-        
-        const attendanceId = res.data.id
-        const filename = `leave_${attendanceId}_${Date.now()}.${file.name.split('.').pop()}`
-        
-        const downloadUrl = await staffAttendanceStore.uploadLeaveDocument(base64Data, filename)
-        if (downloadUrl) {
-          const updateRes = await staffAttendanceStore.updateLeaveStatus(
-            attendanceId, 
-            downloadUrl,
-            leaveStartDate.value,
-            leaveEndDate.value
-          )
-          if (updateRes.success) {
-            openModal('Success', 'Leave document uploaded successfully!', 'success')
-          } else {
-            showNotification(updateRes.error || 'Failed to update leave status.', 'error')
-          }
-        } else {
-          showNotification('Failed to upload document.', 'error')
-        }
+      submittingLeave.value = true
+      showNotification('Submitting leave request...', 'info')
+      
+      const ensuredStaffId = staffId.value || (await staffAttendanceStore.ensureCurrentStaffId())
+      const res = await staffAttendanceStore.createOrGetDailyAttendance(ensuredStaffId)
+      
+      if (!res.success || !res.data?.id) {
+         showNotification('Failed to find daily attendance record.', 'error')
+         submittingLeave.value = false
+         return
       }
-      reader.readAsDataURL(file)
+
+      const attendanceId = res.data.id
+      const updateRes = await staffAttendanceStore.updateLeaveStatus(
+        attendanceId, 
+        leaveDocumentUrls.value,
+        leaveStartDate.value,
+        leaveEndDate.value
+      )
+
+      if (updateRes.success) {
+        openModal('Success', 'Your leave request has been submitted successfully!', 'success')
+      } else {
+        showNotification(updateRes.error || 'Failed to submit leave request.', 'error')
+      }
     } catch (error) {
-      console.error('File upload error:', error)
-      showNotification('An error occurred during file upload.', 'error')
+      console.error('Leave submission error:', error)
+      showNotification('An error occurred during submission.', 'error')
+    } finally {
+      submittingLeave.value = false
     }
   }
 
@@ -1039,15 +1084,15 @@
     try {
       const res = await staffAttendanceStore.updateLeaveStatus(
         attendance.id, 
-        null, // clear document url
+        [], // clear all doc urls
         leaveStartDate.value,
         leaveEndDate.value
       )
       if (res.success) {
-        showNotification('Document removed.', 'info')
+        showNotification('All documents removed.', 'info')
       }
     } catch (error) {
-      showNotification('Failed to remove document.', 'error')
+      showNotification('Failed to remove documents.', 'error')
     }
   }
 
@@ -1058,7 +1103,7 @@
     }
     
     if (todayLogs.value.length === 0) {
-      return 'Place your finger on the scanner to mark your attendance'
+      return 'Tap your RFID card to record attendance'
     }
     
     const lastLog = todayLogs.value[0]
@@ -1068,7 +1113,7 @@
       return 'Welcome back! Scan to clock in and resume work'
     }
     
-    return 'Place your finger on the scanner to mark your attendance'
+    return 'Tap your RFID card to record attendance'
   }
 
   const getBiometricButtonText = () => {
@@ -1756,4 +1801,14 @@
     // Stop camera if active
     stopCamera()
   })
+
+  const checkRfidAndAction = () => {
+    const el = document.getElementById('rfid-attendance-input')
+    if (el && el.value) {
+      handleBiometricAction()
+      el.value = ''
+    } else {
+      openModal('RFID Not Detected', 'Please tap your RFID card on the scanner before clocking in.', 'error')
+    }
+  }
 </script>

@@ -1,83 +1,7 @@
 <template>
   <div class="flex h-screen bg-[#f5f5f5] font-sans antialiased">
     <!-- Sidebar -->
-    <aside class="w-[260px] bg-white/95 backdrop-blur-xl border-r border-white/20 py-8 px-5 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.1)]">
-      <div class="flex justify-between items-center mb-10">
-        <div class="text-2xl font-extrabold tracking-tight bg-gradient-to-br from-blue-900 to-blue-800 bg-clip-text text-transparent">
-          <span class="text-blue-900">ATTEND</span><span class="text-blue-800">ICT</span>
-        </div>
-        <button class="hidden bg-white/80 p-2 rounded-lg text-slate-500 hover:bg-blue-900/10 hover:scale-105 transition-all duration-300">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-
-      <nav class="flex flex-col gap-3">
-        <div class="flex items-center gap-3 py-3 px-3 rounded-lg cursor-pointer text-sm transition-all duration-200"
-             :class="activeNav === 'dashboard' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-[0_8px_24px_rgba(30,58,138,0.3)]' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'"
-             @click="navigateTo('StaffDashboard', 'dashboard')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          <span>Dashboard</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-3 rounded-lg cursor-pointer text-sm transition-all duration-200"
-             :class="activeNav === 'attendance' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-[0_8px_24px_rgba(30,58,138,0.3)]' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'"
-             @click="navigateTo('StaffAttendance', 'attendance')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="1"></circle>
-            <path d="M12 1v6m0 6v6"></path>
-            <path d="M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24"></path>
-            <path d="M1 12h6m6 0h6"></path>
-            <path d="M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"></path>
-          </svg>
-          <span>My Attendance</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-3 rounded-lg cursor-pointer text-sm transition-all duration-200"
-             :class="activeNav === 'attendance-logs' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-[0_8px_24px_rgba(30,58,138,0.3)]' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'"
-             @click="navigateTo('StaffAttendanceLogs', 'attendance-logs')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          <span>Attendance Logs</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-3 rounded-lg cursor-pointer text-sm transition-all duration-200"
-             :class="activeNav === 'monthly-summary' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-[0_8px_24px_rgba(30,58,138,0.3)]' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'"
-             @click="navigateTo('StaffMonthlySummary', 'monthly-summary')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-          </svg>
-          <span>Monthly Summary</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-3 rounded-lg cursor-pointer text-sm transition-all duration-200"
-             :class="activeNav === 'fingerprint' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-[0_8px_24px_rgba(30,58,138,0.3)]' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'"
-             @click="navigateTo('StaffFingerprintEnrollment', 'fingerprint')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 11a2 2 0 0 0-2 2v2"></path>
-            <path d="M12 9a4 4 0 0 0-4 4v2"></path>
-            <path d="M12 7a6 6 0 0 0-6 6v2"></path>
-            <path d="M12 5a8 8 0 0 0-8 8v2"></path>
-            <path d="M12 11a2 2 0 0 1 2 2v2"></path>
-            <path d="M12 9a4 4 0 0 1 4 4v2"></path>
-          </svg>
-          <span>Fingerprint Enrollment</span>
-        </div>
-      </nav>
-    </aside>
+    <StaffSidebar activeNav="dashboard" />
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col bg-neutral-50 relative z-0">
@@ -133,7 +57,7 @@
       </header>
 
       <!-- Page Content -->
-      <div class="flex-1 p-8 overflow-y-auto">
+      <div class="flex-1 p-8 pb-24 md:pb-8 overflow-y-auto">
         <div class="flex justify-between items-start mb-8">
           <div>
             <h2 class="text-2xl text-gray-800 font-bold mb-2">Dashboard Overview</h2>
@@ -224,6 +148,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import StaffSidebar from './StaffSidebar.vue'
 import { useRouter } from 'vue-router'
 import { db } from '../../firebase.js'
 import { doc, getDoc } from 'firebase/firestore'
@@ -410,26 +335,36 @@ const areaOptions = computed(() => {
 })
 
 const donutSeries = computed(() => {
-  const counts = { Office: 0, Travel: 0, Leave: 0, Absent: 0 }
+  const counts = { Office: 0, OnField: 0, Travel: 0, Leave: 0 }
   staffAttendances.value?.forEach(r => {
-     if (r.staffStatusAM === 'At Office') counts.Office++
-     else if (r.staffStatusAM === 'Travel/On Field') counts.Travel++
-     else if (r.staffStatusAM === 'Leave') counts.Leave++
-     else if (r.staffStatusAM === 'Absent') counts.Absent++
+    if (r.timeInAM) {
+      const amStatus = r.staffStatusAM || r.statusAM || (r.staffStatus === 'Leave' ? 'Leave' : 'At Office')
+      if (amStatus === 'Travel') counts.Travel++
+      else if (amStatus === 'On Field' || amStatus === 'Travel/On Field') counts.OnField++
+      else if (amStatus === 'Leave') counts.Leave++
+      else counts.Office++
+    }
 
-     if (r.staffStatusPM === 'At Office') counts.Office++
-     else if (r.staffStatusPM === 'Travel/On Field') counts.Travel++
-     else if (r.staffStatusPM === 'Leave') counts.Leave++
-     else if (r.staffStatusPM === 'Absent') counts.Absent++
+    if (r.timeInPM) {
+      const pmStatus = r.staffStatusPM || r.statusPM || (r.staffStatus === 'Leave' ? 'Leave' : 'At Office')
+      if (pmStatus === 'Travel') counts.Travel++
+      else if (pmStatus === 'On Field' || pmStatus === 'Travel/On Field') counts.OnField++
+      else if (pmStatus === 'Leave') counts.Leave++
+      else counts.Office++
+    }
+
+    if (!r.timeInAM && !r.timeInPM && r.staffStatus === 'Leave') {
+      counts.Leave += 2
+    }
   })
-  return [counts.Office, counts.Travel, counts.Leave, counts.Absent]
+  return [counts.Office, counts.OnField, counts.Travel, counts.Leave]
 })
 
 const donutOptions = computed(() => {
   return {
     chart: { type: 'donut' },
-    labels: ['At Office', 'Travel/On Field', 'Leave', 'Absent'],
-    colors: ['#10b981', '#f59e0b', '#3b82f6', '#ef4444'],
+    labels: ['At Office', 'On Field', 'Travel', 'Leave'],
+    colors: ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'],
     plotOptions: {
       pie: {
         donut: {

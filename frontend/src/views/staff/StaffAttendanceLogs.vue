@@ -1,76 +1,7 @@
 <template>
   <div class="flex h-screen bg-[#f5f5f5] font-sans antialiased text-gray-900">
     <!-- Sidebar -->
-    <aside class="w-[260px] bg-white/95 backdrop-blur-xl border-r border-gray-200 py-8 px-5 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10">
-      <div class="flex justify-between items-center mb-10 px-2">
-        <div class="text-2xl font-extrabold tracking-tight bg-gradient-to-br from-blue-900 to-blue-800 bg-clip-text text-transparent">
-          <span class="text-blue-900">ATTEND</span><span class="text-blue-800">ICT</span>
-        </div>
-      </div>
-
-      <nav class="flex flex-col gap-2">
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'dashboard' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffDashboard', 'dashboard')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          <span>Dashboard</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'attendance' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffAttendance', 'attendance')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="1"></circle>
-            <path d="M12 1v6m0 6v6"></path>
-            <path d="M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24"></path>
-            <path d="M1 12h6m6 0h6"></path>
-            <path d="M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"></path>
-          </svg>
-          <span>My Attendance</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'attendance-logs' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffAttendanceLogs', 'attendance-logs')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          <span>Attendance Logs</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'monthly-summary' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffMonthlySummary', 'monthly-summary')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-          </svg>
-          <span>Monthly Summary</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'fingerprint' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffFingerprintEnrollment', 'fingerprint')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 11a2 2 0 0 0-2 2v2"></path>
-            <path d="M12 9a4 4 0 0 0-4 4v2"></path>
-            <path d="M12 7a6 6 0 0 0-6 6v2"></path>
-            <path d="M12 5a8 8 0 0 0-8 8v2"></path>
-            <path d="M12 11a2 2 0 0 1 2 2v2"></path>
-            <path d="M12 9a4 4 0 0 1 4 4v2"></path>
-          </svg>
-          <span>Fingerprint Enrollment</span>
-        </div>
-      </nav>
-    </aside>
+    <StaffSidebar activeNav="attendance-logs" />
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col relative min-w-0 overflow-hidden z-0">
@@ -133,7 +64,7 @@
       </header>
 
       <!-- Page Content -->
-      <div class="flex-1 overflow-y-auto p-4 sm:p-8">
+      <div class="flex-1 overflow-y-auto p-4 sm:p-8 pb-24 md:pb-8">
         <div class="max-w-7xl mx-auto space-y-6">
           
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-2">
@@ -256,7 +187,7 @@
                 <tbody class="divide-y divide-gray-100">
                   <tr v-for="attendance in paginatedAttendances" :key="attendance.id" class="hover:bg-blue-50/30 transition-colors group">
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <div v-if="attendance.status === 'Leave' && attendance.leaveStartDate" class="font-medium text-gray-900 text-xs">
+                      <div v-if="typeof attendance.status === 'string' && attendance.status.includes('Leave') && attendance.leaveStartDate" class="font-medium text-gray-900 text-xs">
                         {{ formatDate(attendance.leaveStartDate) }} - {{ formatDate(attendance.leaveEndDate) }}
                       </div>
                       <div v-else>
@@ -285,16 +216,18 @@
                               'bg-emerald-100 text-emerald-800': getStatusClass(attendance) === 'present' && attendance.status !== 'On Field' && attendance.status !== 'Leave',
                               'bg-blue-100 text-blue-800': attendance.status === 'On Field',
                               'bg-purple-100 text-purple-800': attendance.status === 'Travel' || getStatusClass(attendance) === 'late',
-                              'bg-red-100 text-red-800': getStatusClass(attendance) === 'absent',
-                              'bg-emerald-100 text-emerald-800': attendance.status === 'Leave'
+                              'bg-emerald-100 text-emerald-800': attendance.status === 'Leave',
+                              'bg-amber-100 text-amber-800': typeof attendance.status === 'string' && attendance.status.includes('Pending'),
+                              'bg-red-100 text-red-800': getStatusClass(attendance) === 'absent' && !attendance.status.includes('Pending') && attendance.status !== 'Leave'
                             }">
                         <div class="w-1.5 h-1.5 rounded-full"
                              :class="{
-                               'bg-emerald-500': getStatusClass(attendance) === 'present' && attendance.status !== 'On Field' && attendance.status !== 'Leave',
+                               'bg-emerald-500': getStatusClass(attendance) === 'present' && attendance.status !== 'On Field' && attendance.status !== 'Leave' && !(typeof attendance.status === 'string' && attendance.status.includes('Pending')),
                                'bg-blue-500': attendance.status === 'On Field',
                                'bg-purple-500': attendance.status === 'Travel' || getStatusClass(attendance) === 'late',
-                               'bg-red-500': getStatusClass(attendance) === 'absent',
-                               'bg-emerald-500': attendance.status === 'Leave'
+                               'bg-emerald-500': attendance.status === 'Leave',
+                               'bg-amber-500': typeof attendance.status === 'string' && attendance.status.includes('Pending'),
+                               'bg-red-500': getStatusClass(attendance) === 'absent' && !attendance.status.includes('Pending') && attendance.status !== 'Leave'
                              }"></div>
                         {{ attendance.status || 'At Office' }}
                       </span>
@@ -309,8 +242,8 @@
                         <button class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" @click="viewAttendance(attendance)" title="View Details">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </button>
-                        <button v-if="!attendance.timeOut" class="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" @click="timeOutAttendance(attendance)" title="Time Out">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <button class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" @click="archiveAttendance(attendance)" title="Archive Log">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                         </button>
                       </div>
                     </td>
@@ -341,15 +274,112 @@
         </div>
       </div>
     </main>
+
+    <!-- Overlay for Modal -->
+    <div v-if="isViewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm transition-opacity" @click.self="closeViewModal">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+          <h3 class="text-lg font-bold text-gray-900">Attendance Details</h3>
+          <button @click="closeViewModal" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-colors flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        
+        <!-- Content -->
+        <div class="p-6">
+          <div v-if="selectedAttendance" class="space-y-6">
+            <!-- Details Grid -->
+            <div class="grid grid-cols-2 gap-y-5 gap-x-4">
+              <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Date</p>
+                <p class="text-sm font-medium text-gray-900">{{ formatDate(selectedAttendance.date) }}</p>
+              </div>
+              <div v-if="selectedAttendance.type">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Type</p>
+                <p class="text-sm font-medium text-gray-900">{{ selectedAttendance.type }} {{ selectedAttendance.type !== 'Leave Application' && selectedAttendance.type !== 'Full Day' ? 'Shift' : '' }}</p>
+              </div>
+              <div v-if="selectedAttendance.timeIn">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Time In</p>
+                <p class="text-sm font-medium text-emerald-600">{{ formatTime(selectedAttendance.timeIn) }}</p>
+              </div>
+              <div v-if="selectedAttendance.timeOut">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Time Out</p>
+                <p class="text-sm font-medium text-orange-600">{{ formatTime(selectedAttendance.timeOut) }}</p>
+              </div>
+              <div class="col-span-2">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Status</p>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shrink-0 mt-1"
+                      :class="{
+                        'bg-emerald-100 text-emerald-800': getStatusClass(selectedAttendance) === 'present' && selectedAttendance.status !== 'On Field' && selectedAttendance.status !== 'Leave',
+                        'bg-blue-100 text-blue-800': selectedAttendance.status === 'On Field',
+                        'bg-purple-100 text-purple-800': selectedAttendance.status === 'Travel' || getStatusClass(selectedAttendance) === 'late',
+                        'bg-emerald-100 text-emerald-800': selectedAttendance.status === 'Leave',
+                        'bg-amber-100 text-amber-800': typeof selectedAttendance.status === 'string' && selectedAttendance.status.includes('Pending'),
+                        'bg-red-100 text-red-800': getStatusClass(selectedAttendance) === 'absent' && !(typeof selectedAttendance.status === 'string' && selectedAttendance.status.includes('Pending')) && selectedAttendance.status !== 'Leave'
+                      }">
+                    <div class="w-1.5 h-1.5 rounded-full"
+                         :class="{
+                           'bg-emerald-500': getStatusClass(selectedAttendance) === 'present' && selectedAttendance.status !== 'On Field' && selectedAttendance.status !== 'Leave' && !(typeof selectedAttendance.status === 'string' && selectedAttendance.status.includes('Pending')),
+                           'bg-blue-500': selectedAttendance.status === 'On Field',
+                           'bg-purple-500': selectedAttendance.status === 'Travel' || getStatusClass(selectedAttendance) === 'late',
+                           'bg-emerald-500': selectedAttendance.status === 'Leave',
+                           'bg-amber-500': typeof selectedAttendance.status === 'string' && selectedAttendance.status.includes('Pending'),
+                           'bg-red-500': getStatusClass(selectedAttendance) === 'absent' && !(typeof selectedAttendance.status === 'string' && selectedAttendance.status.includes('Pending')) && selectedAttendance.status !== 'Leave'
+                         }"></div>
+                  {{ selectedAttendance.status || 'At Office' }}
+                </span>
+              </div>
+              <div class="col-span-2" v-if="selectedAttendance.address || selectedAttendance.location">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Location / Address</p>
+                <p class="text-sm font-medium text-gray-900">{{ formatLocation(selectedAttendance) }}</p>
+              </div>
+            </div>
+
+            <!-- Image preview if available -->
+            <div v-if="selectedAttendance.photoUrl" class="mt-4">
+              <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Location Image</p>
+              <div class="rounded-xl overflow-hidden border border-gray-200 bg-gray-50 h-48 sm:h-64 flex items-center justify-center">
+                <img :src="selectedAttendance.photoUrl" alt="Attendance Location" class="w-full h-full object-cover">
+              </div>
+            </div>
+            
+            <div v-else-if="selectedAttendance.leaveDocumentUrl" class="mt-4">
+              <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Leave Document</p>
+              <div class="rounded-xl overflow-hidden border border-gray-200 bg-gray-50 p-4 flex flex-col items-center justify-center">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400 mb-2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <a :href="selectedAttendance.leaveDocumentUrl" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium underline">
+                  View Document
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+          <button @click="closeViewModal" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 
 <script setup>
 import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
+import StaffSidebar from './StaffSidebar.vue'
 import { useRouter } from 'vue-router'
 import { useStaffAttendanceStore } from '../../stores/staffAttendanceStore.js'
-import { GOOGLE_MAPS_API_KEY, GOOGLE_MAPS_EMBED_URL, db } from '../../firebase.js'
+import { db } from '../../firebase.js'
 import { doc, getDoc } from 'firebase/firestore'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -367,6 +397,9 @@ const avatarMenuOpen = ref(false)
 
 const isFilterMenuOpen = ref(false)
 const filterToggleEl = ref(null)
+
+const isViewModalOpen = ref(false)
+const selectedAttendance = ref(null)
 
 const selectedMonth = ref(new Date().getMonth())
 const selectedYear = ref(new Date().getFullYear())
@@ -489,26 +522,51 @@ const logout = () => {
 
 // Computed properties - transform staff attendance data for display
 const attendances = computed(() => {
-  const staffAttendances = staffAttendanceStore.staffAttendances
+  const staffAttendances = staffAttendanceStore.staffAttendances.filter(att => !att.isArchived)
   
   // Transform staff attendance data to match the table format
   const transformedAttendances = []
   
   staffAttendances.forEach(staffAttendance => {
-    // Handle the case where the whole day has a status (like 'Leave' or 'Absent')
-    if ((staffAttendance.staffStatus === 'Leave' || staffAttendance.staffStatus === 'Absent') && !staffAttendance.timeInAM && !staffAttendance.timeInPM) {
+    // 1. Always evaluate leave applications regardless of today's clock-ins.
+    const isLeave = staffAttendance.validationStatus ? true : staffAttendance.staffStatus === 'Leave'
+    let skipBaseLeavePush = false
+    
+    if (isLeave && staffAttendance.leaveStartDate && staffAttendance.leaveEndDate) {
+      const isApproved = staffAttendance.validationStatus === 'Approved'
+      const statusText = isApproved ? 'Leave (Approved)' : `Leave (${staffAttendance.validationStatus || 'Pending'})`
+      
       transformedAttendances.push({
-        id: staffAttendance.id + '_status',
+        id: staffAttendance.id + '_leave_app',
         date: staffAttendance.date,
         timeIn: null,
         timeOut: null,
-        status: staffAttendance.staffStatus,
+        status: statusText,
         leaveStartDate: staffAttendance.leaveStartDate,
         leaveEndDate: staffAttendance.leaveEndDate,
         leaveDocumentUrl: staffAttendance.leaveDocumentUrl,
-        type: 'Full Day',
+        type: 'Leave Application',
         originalId: staffAttendance.id
       })
+      skipBaseLeavePush = true
+    }
+
+    // 2. Handle cases where the whole day defaults to a status ('Leave'/'Absent') WITHOUT any clock-ins.
+    if ((staffAttendance.staffStatus === 'Leave' || staffAttendance.staffStatus === 'Absent') && !staffAttendance.timeInAM && !staffAttendance.timeInPM) {
+      if (!skipBaseLeavePush) {
+        transformedAttendances.push({
+          id: staffAttendance.id + '_status',
+          date: staffAttendance.date,
+          timeIn: null,
+          timeOut: null,
+          status: staffAttendance.staffStatus,
+          leaveStartDate: staffAttendance.leaveStartDate,
+          leaveEndDate: staffAttendance.leaveEndDate,
+          leaveDocumentUrl: staffAttendance.leaveDocumentUrl,
+          type: 'Full Day',
+          originalId: staffAttendance.id
+        })
+      }
       return
     }
 
@@ -566,9 +624,18 @@ const filteredAttendances = computed(() => {
 
   // Filter by Month and Year
   filtered = filtered.filter(att => {
-    if (!att.date) return false
-    const d = new Date(att.date)
-    return d.getMonth() === selectedMonth.value && d.getFullYear() === selectedYear.value
+    if (att.type === 'Leave Application' && att.leaveStartDate && att.leaveEndDate) {
+      const start = new Date(att.leaveStartDate)
+      const end = new Date(att.leaveEndDate)
+      const filterStart = new Date(selectedYear.value, selectedMonth.value, 1)
+      const filterEnd = new Date(selectedYear.value, selectedMonth.value + 1, 0, 23, 59, 59)
+      
+      return start <= filterEnd && end >= filterStart
+    } else {
+      if (!att.date) return false
+      const d = new Date(att.date)
+      return d.getMonth() === selectedMonth.value && d.getFullYear() === selectedYear.value
+    }
   })
 
   if (!searchQuery.value) return filtered
@@ -604,26 +671,35 @@ const getMonthYearString = () => {
 
 const parseMilitaryTime = (timeStr) => {
   if (!timeStr) return ''
-  const t = new Date(timeStr)
-  if (!isNaN(t)) {
-    let hours = t.getHours()
-    let mins = t.getMinutes()
-    let period = hours >= 12 ? 'PM' : 'AM'
-    
-    // Convert 24h to 12h
-    hours = hours % 12
-    hours = hours ? hours : 12
-    
-    // Format mm
-    mins = mins < 10 ? '0' + mins : mins
-    return `${hours}:${mins}`
+
+  let hours, mins
+  const timeParts = timeStr.split(':')
+  if (timeParts.length >= 2 && !isNaN(timeParts[0]) && !isNaN(timeParts[1])) {
+    hours = parseInt(timeParts[0], 10)
+    mins = parseInt(timeParts[1], 10)
+  } else {
+    const t = new Date(timeStr)
+    if (!isNaN(t)) {
+      hours = t.getHours()
+      mins = t.getMinutes()
+    } else {
+      return timeStr // Pass-through if both fail
+    }
   }
-  return timeStr // Pass-through if already string format
+
+  const period = hours >= 12 ? 'pm' : 'am'
+  
+  // Convert 24h to 12h
+  hours = hours % 12
+  hours = hours ? hours : 12
+  
+  // Format mm
+  mins = mins < 10 ? '0' + mins : mins
+  return `${hours}:${mins} ${period}`
 }
 
 // Function to draw a single DTR Panel.
 const drawDTRPanel = (doc, startX, width) => {
-  // Title text sizes scaling
   const centerLine = startX + (width / 2)
   
   doc.setFont('times', 'italic')
@@ -634,35 +710,61 @@ const drawDTRPanel = (doc, startX, width) => {
   doc.setFontSize(14)
   doc.text('DAILY TIME RECORD', centerLine, 18, { align: 'center' })
   
-  doc.setFontSize(10)
-  doc.text('-----', centerLine, 22, { align: 'center' })
-  
   // User Name
   const userFullName = userDisplayName.value || 'User Name'
   doc.setFontSize(11)
-  doc.text(userFullName.toUpperCase(), centerLine, 27, { align: 'center' })
+  doc.text(userFullName.toUpperCase(), centerLine, 24, { align: 'center' })
   
-  // Name underline
+  // Dotted/dashed underline spanning full width
   doc.setLineWidth(0.3)
-  doc.line(startX + 10, 28, startX + width - 10, 28)
+  if (typeof doc.setLineDashPattern === 'function') {
+    doc.setLineDashPattern([1, 1], 0)
+  } else if (typeof doc.setLineDash === 'function') {
+    doc.setLineDash([1, 1], 0)
+  }
+  doc.line(startX + 5, 25, startX + width - 5, 25)
+  if (typeof doc.setLineDashPattern === 'function') {
+    doc.setLineDashPattern([], 0)
+  } else if (typeof doc.setLineDash === 'function') {
+    doc.setLineDash([], 0)
+  }
   
-  // Month underline config
-  doc.setFont('times', 'normal')
+  // (Name) label
+  doc.setFont('times', 'bolditalic')
+  doc.setFontSize(10)
+  doc.text('(Name)', centerLine, 29, { align: 'center' })
+  
+  // Month text
+  doc.setFont('times', 'italic')
   doc.setFontSize(9)
-  doc.text('For the month of ', startX + 5, 33)
+  doc.text('For the month of', startX + 5, 34)
   
-  doc.setFont('times', 'bold')
-  const monthString = getMonthYearString()
-  const textWidth = doc.getTextWidth(monthString)
-  doc.text(monthString, startX + 31, 33)
+  const lastDay = new Date(selectedYear.value, selectedMonth.value + 1, 0).getDate()
+  const monthString = `${months[selectedMonth.value]} 1-${lastDay}                    ${selectedYear.value}`
+  
+  const underlineStart = startX + 29
+  const underlineEnd = startX + width - 5
+  const underlineWidth = underlineEnd - underlineStart
+  
+  doc.setFont('times', 'italic')
+  doc.setFontSize(10)
+  doc.text(monthString, underlineStart + underlineWidth / 2, 33, { align: 'center' })
+  
+  // Solid line underline
   doc.setLineWidth(0.3)
-  doc.line(startX + 31, 34, startX + 31 + textWidth, 34)
+  doc.line(underlineStart, 34, underlineEnd, 34)
   
-  doc.setFont('times', 'normal')
-  doc.setFontSize(8)
-  doc.text('Official hours of arrival\nand departure', startX + 5, 37)
+  // Official hours...
+  doc.setFont('times', 'italic')
+  doc.setFontSize(9)
+  doc.text('Official hours of arrival', startX + 5, 39)
+  doc.text('and departure', startX + 13, 43)
   
-  doc.text('Regular days __________\nSaturdays ___________', startX + (width - 40), 37)
+  doc.text('Regular Days', startX + (width - 40), 39)
+  doc.line(startX + (width - 22), 39, startX + width - 5, 39)
+  
+  doc.text('Saturdays', startX + (width - 40), 43)
+  doc.line(startX + (width - 22), 43, startX + width - 5, 43)
   
   // Prepare Table logic (1 to 31)
   const daysInMonth = 31 // Assume 31 for full form view or derive exact days based on month
@@ -671,17 +773,32 @@ const drawDTRPanel = (doc, startX, width) => {
   // Convert filtered logs into a Date -> Log map for easy lookup
   const attendanceMap = {}
   filteredAttendances.value.forEach(record => {
-    // Only map if date exists, using 'YYYY-MM-DD' key
-    if (record.date) {
+    // 1. Expand leaves internally for the DTR only
+    if (record.type === 'Leave Application' && record.status === 'Leave (Approved)' && record.leaveStartDate && record.leaveEndDate) {
+      let current = new Date(record.leaveStartDate)
+      const end = new Date(record.leaveEndDate)
+      while (current <= end) {
+        if (!isNaN(current) && current.getMonth() === selectedMonth.value && current.getFullYear() === selectedYear.value) {
+          const dayNum = current.getDate()
+          if (!attendanceMap[dayNum]) attendanceMap[dayNum] = {}
+          attendanceMap[dayNum]['AM'] = { timeIn: 'Leave', timeOut: 'Leave' }
+          attendanceMap[dayNum]['PM'] = { timeIn: 'Leave', timeOut: 'Leave' }
+        }
+        current.setDate(current.getDate() + 1)
+      }
+    } else if (record.date) {
+      // 2. Normal processing
       const d = new Date(record.date)
-      // Check if Date is valid
       if (!isNaN(d)) {
         const dayNum = d.getDate()
         if (!attendanceMap[dayNum]) attendanceMap[dayNum] = {}
-        // Assign AM/PM components via type
-        attendanceMap[dayNum][record.type] = {
-           timeIn: record.timeIn,
-           timeOut: record.timeOut
+        // Set standard AM/PM, ignore pure applications unless explicitly mapped
+        if (record.type === 'AM' || record.type === 'PM' || record.type === 'Afternoon') {
+          const normalizedType = record.type === 'Afternoon' ? 'PM' : record.type
+          attendanceMap[dayNum][normalizedType] = {
+             timeIn: record.timeIn,
+             timeOut: record.timeOut
+          }
         }
       }
     }
@@ -702,17 +819,23 @@ const drawDTRPanel = (doc, startX, width) => {
     }
 
     if (isSaturday) {
-      tableDataArr.push([{ content: i.toString(), styles: { fontStyle: 'bold' } }, { content: 'SATURDAY', colSpan: 6, styles: { align: 'center', fontStyle: 'bolditalic', textColor: [100, 100, 100] } }])
+      tableDataArr.push([{ content: i.toString(), styles: { fontStyle: 'bold' } }, { content: 'SATURDAY', colSpan: 4, styles: { align: 'center', fontStyle: 'bolditalic', textColor: [100, 100, 100] } }, '', ''])
     } else if (isSunday) {
-      tableDataArr.push([{ content: i.toString(), styles: { fontStyle: 'bold' } }, { content: 'SUNDAY', colSpan: 6, styles: { align: 'center', fontStyle: 'bolditalic', textColor: [100, 100, 100] } }])
+      tableDataArr.push([{ content: i.toString(), styles: { fontStyle: 'bold' } }, { content: 'SUNDAY', colSpan: 4, styles: { align: 'center', fontStyle: 'bolditalic', textColor: [100, 100, 100] } }, '', ''])
     } else {
       // Normal Weekday row
       const logs = attendanceMap[i] || {}
       
-      const amIn = logs['AM']?.timeIn ? parseMilitaryTime(logs['AM'].timeIn) : ''
-      const amOut = logs['AM']?.timeOut ? parseMilitaryTime(logs['AM'].timeOut) : ''
-      const pmIn = logs['PM']?.timeIn ? parseMilitaryTime(logs['PM'].timeIn) : ''
-      const pmOut = logs['PM']?.timeOut ? parseMilitaryTime(logs['PM'].timeOut) : ''
+      const formatTimeOrStatus = (val) => {
+        if (!val) return ''
+        if (val === 'LEAVE') return 'LEAVE'
+        return parseMilitaryTime(val)
+      }
+
+      const amIn = formatTimeOrStatus(logs['AM']?.timeIn)
+      const amOut = formatTimeOrStatus(logs['AM']?.timeOut)
+      const pmIn = formatTimeOrStatus(logs['PM']?.timeIn)
+      const pmOut = formatTimeOrStatus(logs['PM']?.timeOut)
       
       tableDataArr.push([i.toString(), amIn, amOut, pmIn, pmOut, '', ''])
     }
@@ -725,7 +848,7 @@ const drawDTRPanel = (doc, startX, width) => {
   autoTable(doc, {
     margin: { left: startX + 5 },
     tableWidth: width - 10,
-    startY: 42,
+    startY: 47,
     theme: 'plain',
     styles: { 
       fontSize: 7, 
@@ -766,34 +889,56 @@ const drawDTRPanel = (doc, startX, width) => {
   
   // Footer 1 - Certification paragraph
   doc.setFontSize(8)
-  doc.setFont('times', 'normal')
-  const certText = "I certify on my honor that the above is a true and correct report of the hours of work performed, record of which was made daily at the time of arrival and departure from office."
+  doc.setFont('times', 'italic')
+  const certText = "I CERTIFY on my honor that the above is a true and correct report of the hours of work performed, record of which was made daily at the time of arrival and departure from office."
   // SplitTextToSize ensures the paragraph wraps within the panel
   const splitCert = doc.splitTextToSize(certText, width - 10)
-  doc.text(splitCert, startX + 5, finalY + 5)
+  doc.text(splitCert, centerLine, finalY + 5, { align: 'center' })
   
   // Signature Lines
-  doc.setFontSize(8)
-  doc.setFont('times', 'normal')
   const finalSigY = finalY + 30
   
   // Staff Signature
-  doc.text(userFullName, centerLine, finalSigY, { align: 'center' })
+  doc.setFontSize(10)
+  doc.setFont('times', 'bold')
+  doc.text(userFullName.toUpperCase(), centerLine, finalSigY, { align: 'center' })
+  
+  // Dashed line
   doc.setLineWidth(0.3)
-  doc.line(startX + 15, finalSigY + 1, startX + width - 15, finalSigY + 1)
-  doc.setFont('times', 'italic')
-  doc.text('OJT Intern', centerLine, finalSigY + 4, { align: 'center' })
+  if (typeof doc.setLineDashPattern === 'function') doc.setLineDashPattern([1, 1], 0)
+  else if (typeof doc.setLineDash === 'function') doc.setLineDash([1, 1], 0)
+  doc.line(startX + 5, finalSigY + 1.5, startX + width - 5, finalSigY + 1.5)
+  if (typeof doc.setLineDashPattern === 'function') doc.setLineDashPattern([], 0)
+  else if (typeof doc.setLineDash === 'function') doc.setLineDash([], 0)
+  
+  // OJT Intern
+  doc.setFontSize(9)
+  doc.setFont('times', 'normal')
+  doc.text('OJT Intern', centerLine, finalSigY + 5, { align: 'center' })
+  
+  // Thick Solid Line
+  doc.setLineWidth(1.0)
+  doc.line(startX + 5, finalSigY + 7, startX + width - 5, finalSigY + 7)
   
   // Officer Signature
-  const officerY = finalSigY + 15
+  const officerY = finalSigY + 22
+  doc.setFontSize(10)
   doc.setFont('times', 'bold')
   doc.text('ENGR. MARVIN D. BEJASA', centerLine, officerY, { align: 'center' })
-  doc.setLineWidth(0.3)
-  doc.line(startX + 15, officerY + 1, startX + width - 15, officerY + 1)
+  
+  // Thick Solid Line
+  doc.setLineWidth(1.0)
+  doc.line(startX + 5, officerY + 2, startX + width - 5, officerY + 2)
+  
+  // OIC- Provincial Officer
+  doc.setFontSize(9)
   doc.setFont('times', 'normal')
-  doc.text('OIC - Provincial Officer', centerLine, officerY + 4, { align: 'center' })
+  doc.text('OIC- Provincial Officer', centerLine, officerY + 6, { align: 'center' })
+  
+  // In-Charge
+  doc.setFontSize(9)
   doc.setFont('times', 'italic')
-  doc.text('In-Charge', centerLine, officerY + 7, { align: 'center' })
+  doc.text('In-Charge', centerLine, officerY + 10, { align: 'center' })
 }
 
 const exportDTR = () => {
@@ -924,46 +1069,38 @@ const getStatusClass = (attendance) => {
     case 'on field':
     case 'field':
       return 'present'
-    case 'leave':
-      return 'absent'
     case 'absent':
       return 'absent'
     case 'travel':
       return 'late'
     default:
+      if (status.includes('leave')) return 'absent'
       return 'present'
   }
 }
 
 // View attendance details
 const viewAttendance = (attendance) => {
-  console.log('View attendance:', attendance)
-  // TODO: Implement view modal or navigate to details page
+  selectedAttendance.value = attendance
+  isViewModalOpen.value = true
 }
 
-// Time out attendance
-const timeOutAttendance = async (attendance) => {
-  try {
-    const attendanceData = {
-      location: null,
-      notes: 'Manual time out from logs'
+const closeViewModal = () => {
+  isViewModalOpen.value = false
+  selectedAttendance.value = null
+}
+
+// Archive attendance
+const archiveAttendance = async (attendance) => {
+  if (confirm('Are you sure you want to archive this attendance record?')) {
+    try {
+      await staffAttendanceStore.archiveStaffAttendance(attendance.originalId)
+      showNotification('Attendance log archived successfully!', 'success')
+      await fetchAttendances()
+    } catch (err) {
+      console.error('Failed to archive:', err)
+      showNotification('Failed to archive log', 'error')
     }
-    
-    // Determine if it's AM or PM attendance and use appropriate method
-    if (attendance.type === 'AM') {
-      await staffAttendanceStore.clockOutAM(attendance.originalId, attendanceData)
-    } else if (attendance.type === 'PM') {
-      await staffAttendanceStore.clockOutPM(attendance.originalId, attendanceData)
-    }
-    
-    // Refresh the list
-    await fetchAttendances()
-    
-    // Show success notification
-    showNotification('Time out recorded successfully!', 'success')
-  } catch (err) {
-    console.error('Failed to time out:', err)
-    showNotification('Failed to record time out', 'error')
   }
 }
 

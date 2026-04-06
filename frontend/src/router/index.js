@@ -7,6 +7,12 @@ import AdminStudentTaggingView from '../views/admin/AdminStudentTaggingView.vue'
 import AdminStudentCertificationView from '../views/admin/AdminStudentCertificationView.vue';
 import AdminStudentAttendanceValidationView from '../views/admin/AdminStudentAttendanceValidationView.vue';
 import AdminSettingsView from '../views/admin/AdminSettingsView.vue';
+import AdminDashboardView from '../views/admin/AdminDashboardView.vue';
+import AdminStaffAttendanceView from '../views/admin/AdminStaffAttendanceView.vue';
+import AdminStaffAttendanceValidation from '../views/admin/AdminStaffAttendanceValidation.vue';
+import AdminStaffLeave from '../views/admin/AdminStaffLeave.vue';
+import AdminArchive from '../views/admin/AdminArchive.vue';
+import AdminArchivedAttendanceView from '../views/admin/AdminArchivedAttendanceView.vue';
 import DashboardView from '../views/intern/DashboardView.vue';
 import TimeView from '../views/intern/TimeView.vue';
 import AttendanceView from '../views/intern/AttendanceView.vue';
@@ -62,9 +68,9 @@ const routes = [
   },
   ...staffRoutes,
   {
-    path: '/staff/dashboard',
-    name: 'StaffDashboard',
-    component: StaffDashboardView,
+    path: '/admin/dashboard',
+    name: 'AdminDashboard',
+    component: AdminDashboardView,
   },
   {
     path: '/admin/manage-interns',
@@ -87,9 +93,34 @@ const routes = [
     component: AdminStudentAttendanceValidationView,
   },
   {
+    path: '/admin/manage-staff',
+    name: 'AdminStaffAttendance',
+    component: AdminStaffAttendanceView,
+  },
+  {
+    path: '/admin/staff-attendance-validation',
+    name: 'AdminStaffAttendanceValidation',
+    component: AdminStaffAttendanceValidation,
+  },
+  {
+    path: '/admin/staff-leave',
+    name: 'AdminStaffLeave',
+    component: AdminStaffLeave,
+  },
+  {
     path: '/admin/settings',
     name: 'AdminSettings',
     component: AdminSettingsView,
+  },
+  {
+    path: '/admin/archive',
+    name: 'AdminArchive',
+    component: AdminArchive,
+  },
+  {
+    path: '/admin/archive/attendance-logs',
+    name: 'AdminArchivedAttendance',
+    component: AdminArchivedAttendanceView,
   },
   {
     path: '/auth/admin/login',
@@ -137,6 +168,10 @@ router.beforeEach((to) => {
 
     if (role === 'staff') {
       return { name: 'StaffDashboard' }
+    }
+
+    if (role === 'admin') {
+      return { name: 'AdminDashboard' }
     }
 
     if (role === 'student' || role === 'intern') {

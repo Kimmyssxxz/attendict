@@ -19,7 +19,13 @@ import {
   arrayUnion,
   arrayRemove
 } from 'firebase/firestore'
-import { ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage'
+import { 
+  ref as storageRef, 
+  uploadString, 
+  getDownloadURL, 
+  listAll, 
+  getMetadata 
+} from 'firebase/storage'
 import { db, storage } from '../firebase'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
@@ -99,7 +105,8 @@ export const useStaffAttendanceStore = defineStore('staffAttendance', {
       pageSize: 20,
       totalDocs: 0,
       lastVisible: null
-    }
+    },
+    staffUsers: []
   }),
 
   getters: {
@@ -365,21 +372,29 @@ export const useStaffAttendanceStore = defineStore('staffAttendance', {
     },
 
     // Update leave status, document URL, and duration
-    async updateLeaveStatus(attendanceId, leaveDocumentUrl, leaveStartDate, leaveEndDate) {
+    async updateLeaveStatus(attendanceId, leaveDocumentUrls, leaveStartDate, leaveEndDate) {
       try {
         this.loading = true
         this.error = null
 
         const docRef = doc(db, 'staff_attendance', attendanceId)
+        
+        // Ensure leaveDocumentUrls is an array for internal consistency if needed, 
+        // but we'll store what we get. If it's a single string, we'll handle it.
+        const urls = Array.isArray(leaveDocumentUrls) ? leaveDocumentUrls : (leaveDocumentUrls ? [leaveDocumentUrls] : [])
+        
         const updateData = {
           staffStatus: 'Leave',
-          leaveDocumentUrl: leaveDocumentUrl !== undefined ? leaveDocumentUrl : null,
+          leaveDocumentUrls: urls,
+          // Maintain legacy leaveDocumentUrl (singular) for backward compatibility with first item
+          leaveDocumentUrl: urls.length > 0 ? urls[0] : null,
           leaveStartDate: leaveStartDate || null,
           leaveEndDate: leaveEndDate || null,
+          validationStatus: 'Pending', // Explicitly set to Pending on submission
           updatedAt: serverTimestamp()
         }
 
-        // Clean updateData to avoid undefined values if called with missing arguments
+        // Clean updateData to avoid undefined values
         Object.keys(updateData).forEach(key => {
           if (updateData[key] === undefined) delete updateData[key]
         })
@@ -394,13 +409,16 @@ export const useStaffAttendanceStore = defineStore('staffAttendance', {
             ...updateData
           }
         }
-        
+
         if (this.currentStaffAttendance && this.currentStaffAttendance.id === attendanceId) {
           this.currentStaffAttendance = {
             ...this.currentStaffAttendance,
             ...updateData
           }
         }
+
+        // Refresh all leave requests to ensure admin-level consistency
+        await this.fetchLeaveRequests()
 
         this.loading = false
         return { success: true }
@@ -515,6 +533,31 @@ export const useStaffAttendanceStore = defineStore('staffAttendance', {
       }
     },
 
+    // Archive staff attendance
+    async archiveStaffAttendance(attendanceId) {
+      try {
+        this.loading = true
+        this.error = null
+
+        const docRef = doc(db, 'staff_attendance', attendanceId)
+        await updateDoc(docRef, {
+          isArchived: true,
+          updatedAt: serverTimestamp()
+        })
+
+        // Remove from local state so it immediately disappears
+        this.staffAttendances = this.staffAttendances.filter(att => att.id !== attendanceId)
+
+        this.loading = false
+        return { success: true }
+      } catch (error) {
+        this.loading = false
+        this.error = error.message
+        console.error('Error archiving staff attendance:', error)
+        return { success: false, error: error.message }
+      }
+    },
+
     // Get single staff attendance by ID
     async getStaffAttendanceById(attendanceId) {
       try {
@@ -582,19 +625,32 @@ export const useStaffAttendanceStore = defineStore('staffAttendance', {
           return { success: false, error: 'Missing staffId' }
         }
 
-        const q = query(
+        // 1. Fetch recent attendances with limit
+        const qRecent = query(
           collection(db, 'staff_attendance'),
           where('staffId', '==', resolvedStaffId),
           orderBy('date', 'desc'),
           limit(limitCount)
         )
 
-        const querySnapshot = await getDocs(q)
-        const attendances = []
+        // 2. Fetch ALL leave requests for this staff
+        const qLeave = query(
+          collection(db, 'staff_attendance'),
+          where('staffId', '==', resolvedStaffId),
+          where('validationStatus', 'in', ['Pending', 'Approved', 'Rejected'])
+        )
 
-        querySnapshot.forEach((doc) => {
-          attendances.push({ id: doc.id, ...doc.data() })
-        })
+        const [snapRecent, snapLeave] = await Promise.all([
+          getDocs(qRecent),
+          getDocs(qLeave)
+        ])
+
+        const attendancesMap = new Map()
+        snapRecent.forEach(doc => attendancesMap.set(doc.id, { id: doc.id, ...doc.data() }))
+        snapLeave.forEach(doc => attendancesMap.set(doc.id, { id: doc.id, ...doc.data() }))
+
+        const attendances = Array.from(attendancesMap.values())
+        attendances.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
 
         // Update only the attendances for this staff
         this.staffAttendances = [
@@ -1183,9 +1239,249 @@ export const useStaffAttendanceStore = defineStore('staffAttendance', {
       }
     },
 
+    // Validate staff attendance
+    async validateStaffAttendance(attendanceId, validationStatus, remarks = '') {
+      try {
+        this.loading = true
+        this.error = null
+
+        const docRef = doc(db, 'staff_attendance', attendanceId)
+        const updateData = {
+          validationStatus, // 'Pending', 'Approved', 'Rejected'
+          remarks,
+          validatedAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }
+
+        await updateDoc(docRef, updateData)
+
+        // Update local state
+        const index = this.staffAttendances.findIndex(att => att.id === attendanceId)
+        if (index !== -1) {
+          this.staffAttendances[index] = {
+            ...this.staffAttendances[index],
+            ...updateData
+          }
+        }
+
+        if (this.currentStaffAttendance && this.currentStaffAttendance.id === attendanceId) {
+          this.currentStaffAttendance = {
+            ...this.currentStaffAttendance,
+            ...updateData
+          }
+        }
+
+        this.loading = false
+        return { success: true }
+      } catch (error) {
+        this.loading = false
+        this.error = error.message
+        console.error('Error validating attendance:', error)
+        return { success: false, error: error.message }
+      }
+    },
+
+    // --- Staff User Management Actions ---
+    
+    // Fetch all leave requests (staffStatus === 'Leave' or AM/PM variations)
+    async fetchLeaveRequests() {
+      try {
+        this.loading = true
+        this.error = null
+
+        const collectionRef = collection(db, 'staff_attendance')
+        
+        // We perform 4 separate queries because Firestore doesn't support OR across different fields efficiently
+        const q1 = query(collectionRef, where('staffStatus', '==', 'Leave'))
+        const q2 = query(collectionRef, where('staffStatusAM', '==', 'Leave'))
+        const q3 = query(collectionRef, where('staffStatusPM', '==', 'Leave'))
+        const q4 = query(collectionRef, where('leaveStartDate', '!=', null)) // Capture any record with leave metadata
+
+        const [snap1, snap2, snap3, snap4] = await Promise.all([
+          getDocs(q1),
+          getDocs(q2),
+          getDocs(q3),
+          getDocs(q4)
+        ])
+
+        const resultsMap = new Map()
+        
+        const addDocs = (snapshot) => {
+          snapshot.forEach((doc) => {
+            resultsMap.set(doc.id, { id: doc.id, ...doc.data() })
+          })
+        }
+
+        addDocs(snap1)
+        addDocs(snap2)
+        addDocs(snap3)
+        addDocs(snap4)
+
+        const leaveRequests = Array.from(resultsMap.values())
+
+        // Update local state by merging or replacing
+        // We want to keep existing records that are NOT leave, and add/update these leave ones
+        const leaveIds = new Set(leaveRequests.map(r => r.id))
+        this.staffAttendances = [
+          ...this.staffAttendances.filter(att => !leaveIds.has(att.id)),
+          ...leaveRequests
+        ]
+
+        this.loading = false
+        return { success: true, data: leaveRequests }
+      } catch (error) {
+        this.loading = false
+        this.error = error.message
+        console.error('Error fetching leave requests:', error)
+        return { success: false, error: error.message }
+      }
+    },
+
+    // List all leave documents directly from Firebase Storage
+    async listAllLeaveDocuments() {
+      try {
+        this.loading = true
+        const folderRef = storageRef(storage, 'leave_documents')
+        const res = await listAll(folderRef)
+        
+        const files = await Promise.all(res.items.map(async (item) => {
+          const url = await getDownloadURL(item)
+          const metadata = await getMetadata(item)
+          return {
+            name: item.name,
+            fullPath: item.fullPath,
+            url,
+            size: metadata.size,
+            contentType: metadata.contentType,
+            timeCreated: metadata.timeCreated,
+            updated: metadata.updated
+          }
+        }))
+
+        this.loading = false
+        return { success: true, data: files }
+      } catch (error) {
+        this.loading = false
+        console.error('Error listing leave documents:', error)
+        return { success: false, error: error.message }
+      }
+    },
+
+    // Fetch all staff users
+    async fetchStaffUsers() {
+      try {
+        this.loading = true
+        this.error = null
+
+        const usersRef = collection(db, 'users')
+        const q = query(
+          usersRef,
+          where('role', '==', 'staff')
+        )
+
+        const querySnapshot = await getDocs(q)
+        const users = []
+
+        querySnapshot.forEach((doc) => {
+          users.push({ id: doc.id, ...doc.data() })
+        })
+
+        this.staffUsers = users
+        this.loading = false
+        return { success: true, data: users }
+      } catch (error) {
+        this.loading = false
+        this.error = error.message
+        console.error('Error fetching staff users:', error)
+        return { success: false, error: error.message }
+      }
+    },
+
+    // Add a new staff user
+    async addStaffUser(userData) {
+      try {
+        this.loading = true
+        this.error = null
+
+        const docRef = await addDoc(collection(db, 'users'), {
+          ...userData,
+          role: 'staff',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        })
+
+        const newUser = { id: docRef.id, ...userData, role: 'staff' }
+        this.staffUsers.push(newUser)
+
+        this.loading = false
+        return { success: true, data: newUser }
+      } catch (error) {
+        this.loading = false
+        this.error = error.message
+        console.error('Error adding staff user:', error)
+        return { success: false, error: error.message }
+      }
+    },
+
+    // Update a staff user
+    async updateStaffUser(userId, userData) {
+      try {
+        this.loading = true
+        this.error = null
+
+        const userRef = doc(db, 'users', userId)
+        const updateData = {
+          ...userData,
+          updatedAt: serverTimestamp()
+        }
+
+        await updateDoc(userRef, updateData)
+
+        // Update local state
+        const index = this.staffUsers.findIndex(u => u.id === userId)
+        if (index !== -1) {
+          this.staffUsers[index] = {
+            ...this.staffUsers[index],
+            ...userData,
+            id: userId
+          }
+        }
+
+        this.loading = false
+        return { success: true }
+      } catch (error) {
+        this.loading = false
+        this.error = error.message
+        console.error('Error updating staff user:', error)
+        return { success: false, error: error.message }
+      }
+    },
+
+    // Delete a staff user
+    async deleteStaffUser(userId) {
+      try {
+        this.loading = true
+        this.error = null
+
+        await deleteDoc(doc(db, 'users', userId))
+
+        // Remove from local state
+        this.staffUsers = this.staffUsers.filter(u => u.id !== userId)
+
+        this.loading = false
+        return { success: true }
+      } catch (error) {
+        this.loading = false
+        this.error = error.message
+        console.error('Error deleting staff user:', error)
+        return { success: false, error: error.message }
+      }
+    },
+
     // Reset state
     resetState() {
       this.staffAttendances = []
+      this.staffUsers = []
       this.currentStaffAttendance = null
       this.loading = false
       this.error = null

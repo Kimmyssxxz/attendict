@@ -306,6 +306,36 @@ function getTodayInfo() {
   return { now, dateString, timeString };
 }
 
+/**
+ * Ensures user's daily tagging fields are reset if the date has changed.
+ */
+async function ensureDailyUserTaggingReset(userId, userData, dateString) {
+  if (userData.lastTagResetDate === dateString) {
+    return { userData };
+  }
+
+  const updates = {
+    tagging: null,
+    todayAmTag: null,
+    todayPmTag: null,
+    lastTagResetDate: dateString
+  };
+
+  try {
+    await db.collection('users').doc(userId).update(updates);
+    return {
+      userData: {
+        ...userData,
+        ...updates
+      }
+    };
+  } catch (err) {
+    console.error(`Failed to reset daily tagging for user ${userId}:`, err);
+    // Return original data to avoid breaking the calling flow if update fails
+    return { userData };
+  }
+}
+
 function parseUserAgent(ua) {
   if (!ua || typeof ua !== 'string') {
     return {

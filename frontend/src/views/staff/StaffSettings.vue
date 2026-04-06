@@ -1,82 +1,13 @@
 <template>
   <div class="flex h-screen bg-[#f5f5f5] font-sans antialiased text-gray-900">
     <!-- Sidebar -->
-    <aside class="w-[260px] bg-white/95 backdrop-blur-xl border-r border-gray-200 py-8 px-5 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 shrink-0 hidden md:flex">
-      <div class="flex justify-between items-center mb-10 px-2">
-        <div class="text-2xl font-extrabold tracking-tight bg-gradient-to-br from-blue-900 to-blue-800 bg-clip-text text-transparent">
-          <span class="text-blue-900">ATTEND</span><span class="text-blue-800">ICT</span>
-        </div>
-      </div>
-
-      <nav class="flex flex-col gap-2">
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'dashboard' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffDashboard', 'dashboard')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          <span>Dashboard</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'attendance' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffAttendance', 'attendance')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="1"></circle>
-            <path d="M12 1v6m0 6v6"></path>
-            <path d="M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24"></path>
-            <path d="M1 12h6m6 0h6"></path>
-            <path d="M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"></path>
-          </svg>
-          <span>My Attendance</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'attendance-logs' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffAttendanceLogs', 'attendance-logs')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          <span>Attendance Logs</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'monthly-summary' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffMonthlySummary', 'monthly-summary')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-          </svg>
-          <span>Monthly Summary</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'fingerprint' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffFingerprintEnrollment', 'fingerprint')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 11a2 2 0 0 0-2 2v2"></path>
-            <path d="M12 9a4 4 0 0 0-4 4v2"></path>
-            <path d="M12 7a6 6 0 0 0-6 6v2"></path>
-            <path d="M12 5a8 8 0 0 0-8 8v2"></path>
-            <path d="M12 11a2 2 0 0 1 2 2v2"></path>
-            <path d="M12 9a4 4 0 0 1 4 4v2"></path>
-          </svg>
-          <span>Fingerprint Enrollment</span>
-        </div>
-      </nav>
-    </aside>
+    <StaffSidebar activeNav="settings" />
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col relative min-w-0 overflow-hidden z-0 bg-white">
       
       <!-- Page Content -->
-      <div class="flex-1 overflow-y-auto px-4 py-8 sm:px-8">
+      <div class="flex-1 overflow-y-auto px-4 py-8 sm:px-8 pb-32 md:pb-8">
         <div class="max-w-4xl mx-auto space-y-6 pb-20">
           
           <!-- Avatar Header Section -->
@@ -160,9 +91,13 @@
                     </div>
                     <button class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-[11px] font-medium rounded-lg transition-colors shadow-sm h-[38px]">Change</button>
                   </div>
-                  <div class="col-span-1 md:col-span-2">
+                  <div>
                     <label class="block text-[11px] text-gray-500 mb-1">Alternative Email</label>
                     <input type="email" v-model="form.alternativeEmail" placeholder="Enter alternative email" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none transition-all">
+                  </div>
+                  <div>
+                    <label class="block text-[11px] text-gray-500 mb-1">Position</label>
+                    <input type="text" v-model="form.position" placeholder="Enter position" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none transition-all">
                   </div>
                 </div>
               </section>
@@ -301,6 +236,7 @@
 
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
+import StaffSidebar from './StaffSidebar.vue'
 import { useRouter } from 'vue-router'
 import { db, storage } from '../../firebase.js'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
@@ -338,6 +274,7 @@ const form = ref({
   email: '',
   phone: '',
   alternativeEmail: '',
+  position: '',
   address: {
     streetAddress: '',
     city: '',
@@ -554,6 +491,7 @@ const fetchUserProfile = async () => {
         email: data.email || data.emailAddress || '',
         phone: data.phone || data.contactNumber || '',
         alternativeEmail: data.alternativeEmail || '',
+        position: data.position || '',
         address: {
           streetAddress: data.address?.streetAddress || data.streetAddress || '',
           city: data.address?.city || data.city || '',
@@ -590,6 +528,7 @@ const saveChanges = async () => {
       gender: form.value.gender,
       phone: form.value.phone,
       alternativeEmail: form.value.alternativeEmail,
+      position: form.value.position,
       address: {
         streetAddress: form.value.address.streetAddress,
         city: form.value.address.city,

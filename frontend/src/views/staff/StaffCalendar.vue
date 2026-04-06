@@ -1,76 +1,6 @@
 <template>
   <div class="flex h-screen bg-[#f5f5f5] font-sans antialiased text-gray-900">
-    <!-- Sidebar -->
-    <aside class="w-[260px] bg-white/95 backdrop-blur-xl border-r border-gray-200 py-8 px-5 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 shrink-0 hidden md:flex">
-      <div class="flex justify-between items-center mb-10 px-2">
-        <div class="text-2xl font-extrabold tracking-tight bg-gradient-to-br from-blue-900 to-blue-800 bg-clip-text text-transparent">
-          <span class="text-blue-900">ATTEND</span><span class="text-blue-800">ICT</span>
-        </div>
-      </div>
-
-      <nav class="flex flex-col gap-2">
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'dashboard' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffDashboard', 'dashboard')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          <span>Dashboard</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'attendance' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffAttendance', 'attendance')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="1"></circle>
-            <path d="M12 1v6m0 6v6"></path>
-            <path d="M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24"></path>
-            <path d="M1 12h6m6 0h6"></path>
-            <path d="M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"></path>
-          </svg>
-          <span>My Attendance</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'attendance-logs' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffAttendanceLogs', 'attendance-logs')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          <span>Attendance Logs</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'monthly-summary' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffMonthlySummary', 'monthly-summary')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-          </svg>
-          <span>Monthly Summary</span>
-        </div>
-
-        <div class="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer text-sm font-medium transition-all duration-200"
-             :class="activeNav === 'fingerprint' ? 'bg-gradient-to-br from-blue-900 to-blue-800 text-white shadow-md shadow-blue-900/20' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
-             @click="navigateTo('StaffFingerprintEnrollment', 'fingerprint')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 11a2 2 0 0 0-2 2v2"></path>
-            <path d="M12 9a4 4 0 0 0-4 4v2"></path>
-            <path d="M12 7a6 6 0 0 0-6 6v2"></path>
-            <path d="M12 5a8 8 0 0 0-8 8v2"></path>
-            <path d="M12 11a2 2 0 0 1 2 2v2"></path>
-            <path d="M12 9a4 4 0 0 1 4 4v2"></path>
-          </svg>
-          <span>Fingerprint Enrollment</span>
-        </div>
-      </nav>
-    </aside>
+    <StaffSidebar activeNav="monthly-summary" />
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col relative min-w-0 overflow-hidden z-0">
@@ -128,7 +58,7 @@
       </header>
 
       <!-- Page Content -->
-      <div class="flex-1 overflow-y-auto p-4 sm:p-8">
+      <div class="flex-1 overflow-y-auto p-4 sm:p-8 pb-24 md:pb-8">
         <div class="max-w-4xl mx-auto">
           <!-- Calendar Panel -->
           <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -188,9 +118,9 @@
 
             <div class="bg-gray-50 border-t border-gray-100 p-4 sm:p-6 flex flex-wrap justify-center gap-4 sm:gap-8" aria-label="Attendance legend">
               <div class="flex items-center gap-2 text-sm font-medium text-gray-600"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-100" aria-hidden="true"></span><span>At Office</span></div>
-              <div class="flex items-center gap-2 text-sm font-medium text-gray-600"><span class="w-2.5 h-2.5 rounded-full bg-orange-400 ring-2 ring-orange-100" aria-hidden="true"></span><span>Travel / On Field</span></div>
-              <div class="flex items-center gap-2 text-sm font-medium text-gray-600"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-blue-100" aria-hidden="true"></span><span>Leave</span></div>
-              <div class="flex items-center gap-2 text-sm font-medium text-gray-600"><span class="w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-red-100" aria-hidden="true"></span><span>Absent</span></div>
+              <div class="flex items-center gap-2 text-sm font-medium text-gray-600"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-blue-100" aria-hidden="true"></span><span>On Field</span></div>
+              <div class="flex items-center gap-2 text-sm font-medium text-gray-600"><span class="w-2.5 h-2.5 rounded-full bg-purple-500 ring-2 ring-purple-100" aria-hidden="true"></span><span>Travel</span></div>
+              <div class="flex items-center gap-2 text-sm font-medium text-gray-600"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 ring-2 ring-orange-100" aria-hidden="true"></span><span>Leave</span></div>
             </div>
           </div>
         </div>
@@ -205,6 +135,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { collection, doc, getDoc, onSnapshot, orderBy, query, where } from 'firebase/firestore'
 import { db } from '../../firebase'
+import StaffSidebar from './StaffSidebar.vue'
 
 const router = useRouter()
 const activeTab = ref('current')
@@ -256,7 +187,7 @@ const currentStaff = computed(() => {
 
 const staffId = computed(() => {
   const u = currentStaff.value
-  return u?.uid || u?.id || u?.staffId || u?._id || u?.username || null
+  return u?.uid || u?.id || u?.staffId || u?._id || null
 })
 
 const staffProfile = ref(null)
@@ -348,41 +279,56 @@ const normalizeStatus = (raw) => {
   const s = String(raw || '').toLowerCase()
   if (s.includes('office')) return 'office'
   if (s.includes('present')) return 'office' // legacy fallback
-  if (s.includes('travel') || s.includes('field')) return 'travel'
+  if (s.includes('travel')) return 'travel'
+  if (s.includes('field')) return 'field'
   if (s.includes('leave')) return 'leave'
-  if (s.includes('absent')) return 'absent'
   return null
 }
 
 const resolveDayStatus = (docData) => {
   if (!docData) return null
 
-  // If the whole day has a status (like 'Leave' or 'Absent')
+  // If the whole day has a status (like 'Leave'), only show it if APPROVED
   if (docData.staffStatus === 'Leave') {
-    return { am: 'leave', pm: 'leave' }
-  }
-  if (docData.staffStatus === 'Absent') {
-    return { am: 'absent', pm: 'absent' }
+    if (docData.validationStatus === 'Approved') {
+      return { am: 'leave', pm: 'leave' }
+    } else {
+      return null // Don't show leave dot if NOT approved
+    }
   }
 
-  const am = normalizeStatus(docData.staffStatusAM || docData.statusAM)
-  const pm = normalizeStatus(docData.staffStatusPM || docData.statusPM)
+  let am = normalizeStatus(docData.staffStatusAM || docData.statusAM)
+  let pm = normalizeStatus(docData.staffStatusPM || docData.statusPM)
+
+  // Fallback to general staffStatus if session-specific status is missing but user clocked in
+  if (!am && docData.timeInAM) {
+    am = normalizeStatus(docData.staffStatus) || 'office'
+  }
+  if (!pm && docData.timeInPM) {
+    pm = normalizeStatus(docData.staffStatus) || 'office'
+  }
 
   if (!am && !pm) return null
 
+  // Explicitly check for 'leave' in AM/PM and hide if not approved
+  const finalAm = (am === 'leave' && docData.validationStatus !== 'Approved') ? 'none' : (am || 'none')
+  const finalPm = (pm === 'leave' && docData.validationStatus !== 'Approved') ? 'none' : (pm || 'none')
+
+  if (finalAm === 'none' && finalPm === 'none') return null
+
   return {
-    am: am || 'absent',
-    pm: pm || 'absent'
+    am: finalAm,
+    pm: finalPm
   }
 }
 
 const getStatusColor = (status) => {
   switch (status) {
     case 'office': return '#10b981' // Green
-    case 'absent': return '#ef4444' // Red
-    case 'travel': return '#f59e0b' // Orange
-    case 'leave': return '#3b82f6'  // Blue
-    default: return '#transparent'
+    case 'field': return '#3b82f6'  // Blue
+    case 'travel': return '#a855f7' // Purple
+    case 'leave': return '#f97316'  // Orange
+    default: return 'transparent'
   }
 }
 
@@ -425,11 +371,14 @@ const subscribeToMonthAttendance = () => {
       
       // Traditional single-day mapping
       if (data.date) {
-        map[data.date] = resolveDayStatus(data)
+        const status = resolveDayStatus(data)
+        if (status) {
+           map[data.date] = status
+        }
       }
 
-      // Expand Leave duration if present
-      if (data.staffStatus === 'Leave' && data.leaveStartDate && data.leaveEndDate) {
+      // Expand Leave duration if present AND APPROVED (regardless of daily staffStatus)
+      if (data.leaveStartDate && data.leaveEndDate && data.validationStatus === 'Approved') {
         const [sY, sM, sD] = data.leaveStartDate.split('-').map(Number)
         const [eY, eM, eD] = data.leaveEndDate.split('-').map(Number)
         

@@ -3,7 +3,7 @@ import StaffAttendance from '../views/staff/StaffAttendance.vue';
 import StaffAttendanceLogs from '../views/staff/StaffAttendanceLogs.vue';
 import StaffCalendar from '../views/staff/StaffCalendar.vue';
 import StaffSettings from '../views/staff/StaffSettings.vue';
-import StaffFingerprintEnrollment from '../views/staff/StaffFingerprintEnrollment.vue';
+
 
 const staffRoutes = [
   {
@@ -30,11 +30,6 @@ const staffRoutes = [
     path: '/staff/settings',
     name: 'StaffSettings',
     component: StaffSettings
-  },
-  {
-    path: '/staff/fingerprint-enrollment',
-    name: 'StaffFingerprintEnrollment',
-    component: StaffFingerprintEnrollment
   }
 ];
 

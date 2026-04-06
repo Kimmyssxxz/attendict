@@ -22,7 +22,7 @@
         <button
           type="button"
           class="flex items-center gap-2.5 px-2 md:px-3 py-1.5 md:py-2 w-full border-none bg-transparent justify-between cursor-pointer rounded-xl text-gray-700 font-sans text-sm transition-all hover:bg-blue-50 hover:text-blue-700"
-          @click="userMgmtOpen = !userMgmtOpen"
+          @click="toggleUserMgmt"
         >
           <div class="flex items-center gap-2.5">
             <span class="w-[26px] h-[26px] rounded-full bg-blue-50 flex items-center justify-center text-sm transition-colors">👥</span>
@@ -70,6 +70,50 @@
             </router-link>
           </div>
         </div>
+
+        <button
+          type="button"
+          class="flex items-center gap-2.5 px-2 md:px-3 py-1.5 md:py-2 w-full border-none bg-transparent justify-between cursor-pointer rounded-xl text-gray-700 font-sans text-sm transition-all hover:bg-blue-50 hover:text-blue-700"
+          @click="toggleStaffMgmt"
+        >
+          <div class="flex items-center gap-2.5">
+            <span class="w-[26px] h-[26px] rounded-full bg-blue-50 flex items-center justify-center text-sm transition-colors">👔</span>
+            <span class="hidden md:inline text-left">Staff</span>
+          </div>
+          <span class="hidden md:inline text-[0.7rem] text-gray-500 transition-transform duration-150" :class="{ 'rotate-180': staffMgmtOpen }">
+            ▾
+          </span>
+        </button>
+
+        <div v-if="staffMgmtOpen" class="flex mt-0.5 hidden md:flex">
+          <div class="w-px my-1 ml-3 mr-2 bg-gray-300"></div>
+          <div class="flex-1 flex flex-col">
+            <router-link
+              to="/admin/manage-staff"
+              class="flex items-center gap-2.5 pl-[1.9rem] pr-3 py-1.5 rounded-xl text-gray-700 no-underline text-[0.85rem] transition-all hover:bg-blue-50 hover:text-blue-700"
+              active-class="bg-blue-100 text-blue-700 [&>span:first-child]:bg-black/5"
+            >
+              <span class="w-[26px] h-[26px] rounded-full bg-blue-50 flex items-center justify-center text-sm transition-colors">📋</span>
+              <span>Manage Staff</span>
+            </router-link>
+            <router-link
+              to="/admin/staff-attendance-validation"
+              class="flex items-center gap-2.5 pl-[1.9rem] pr-3 py-1.5 rounded-xl text-gray-700 no-underline text-[0.85rem] transition-all hover:bg-blue-50 hover:text-blue-700"
+              active-class="bg-blue-100 text-blue-700 [&>span:first-child]:bg-black/5"
+            >
+              <span class="w-[26px] h-[26px] rounded-full bg-blue-50 flex items-center justify-center text-sm transition-colors">✅</span>
+              <span>Staff Attendance Validation</span>
+            </router-link>
+            <router-link
+              to="/admin/staff-leave"
+              class="flex items-center gap-2.5 pl-[1.9rem] pr-3 py-1.5 rounded-xl text-gray-700 no-underline text-[0.85rem] transition-all hover:bg-blue-50 hover:text-blue-700"
+              active-class="bg-blue-100 text-blue-700 [&>span:first-child]:bg-black/5"
+            >
+              <span class="w-[26px] h-[26px] rounded-full bg-blue-50 flex items-center justify-center text-sm transition-colors">🏖️</span>
+              <span>Staff Leave Requests</span>
+            </router-link>
+          </div>
+        </div>
         <router-link
           to="/admin/settings"
           class="flex items-center gap-2.5 px-2 md:px-3 py-1.5 md:py-2 rounded-xl text-gray-700 no-underline text-sm transition-all hover:bg-blue-50 hover:text-blue-700"
@@ -77,6 +121,14 @@
         >
           <span class="w-[26px] h-[26px] rounded-full bg-blue-50 flex items-center justify-center text-sm transition-colors">⚙️</span>
           <span class="hidden md:inline">Set Office Hours</span>
+        </router-link>
+        <router-link
+          to="/admin/archive"
+          class="flex items-center gap-2.5 px-2 md:px-3 py-1.5 md:py-2 rounded-xl text-gray-700 no-underline text-sm transition-all hover:bg-blue-50 hover:text-blue-700"
+          active-class="bg-blue-100 text-blue-700 [&>span:first-child]:bg-black/5"
+        >
+          <span class="w-[26px] h-[26px] rounded-full bg-blue-50 flex items-center justify-center text-sm transition-colors">🗄️</span>
+          <span class="hidden md:inline">Archive</span>
         </router-link>
       </nav>
     </div>
@@ -88,9 +140,47 @@ export default {
   name: 'AdminSidebar',
   data() {
     return {
-      userMgmtOpen: true,
+      userMgmtOpen: false,
+      staffMgmtOpen: false,
     };
   },
+  mounted() {
+    this.checkActiveMenu();
+  },
+  watch: {
+    $route() {
+      this.checkActiveMenu();
+    }
+  },
+  methods: {
+    toggleUserMgmt() {
+      this.userMgmtOpen = !this.userMgmtOpen;
+      if (this.userMgmtOpen) {
+        this.staffMgmtOpen = false;
+      }
+    },
+    toggleStaffMgmt() {
+      this.staffMgmtOpen = !this.staffMgmtOpen;
+      if (this.staffMgmtOpen) {
+        this.userMgmtOpen = false;
+      }
+    },
+    checkActiveMenu() {
+      const path = this.$route.path;
+      if (path.includes('/admin/manage-staff') || path.includes('/admin/staff-attendance-validation') || path.includes('/admin/staff-leave')) {
+        this.staffMgmtOpen = true;
+        this.userMgmtOpen = false;
+      } else if (
+        path.includes('/admin/manage-interns') || 
+        path.includes('/admin/student-attendance-validation') ||
+        path.includes('/admin/student-tagging') ||
+        path.includes('/admin/student-certification')
+      ) {
+        this.userMgmtOpen = true;
+        this.staffMgmtOpen = false;
+      }
+    }
+  }
 };
 </script>
 

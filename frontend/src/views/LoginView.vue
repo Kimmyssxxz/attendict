@@ -24,7 +24,7 @@
         
         <!-- Central Circular Graphic area -->
         <div class="relative w-[28rem] h-[28rem] bg-orange-50 rounded-full flex items-center justify-center shadow-sm border border-orange-100 z-10">
-          <DotLottieVue style="height: 500px; width: 500px" autoplay loop src="https://path-to-lottie.lottie" />
+          <DotLottieVue style="height: 500px; width: 500px" autoplay loop src="https://lottie.host/6ad83ae1-839d-473d-98ae-3918a1a36e92/vId07eA74k.json" />
         </div>
       </div>
 
@@ -97,7 +97,9 @@ export default {
   },
   methods: {
     async handleLogin() {
+      console.log('Login attempt started for user:', this.username);
       try {
+        console.log('Sending request to backend...');
         const response = await fetch('http://localhost:3001/auth/login', {
           method: 'POST',
           headers: {
@@ -108,6 +110,7 @@ export default {
             password: this.password,
           }),
         });
+        console.log('Response received status:', response.status);
 
         if (!response.ok) {
           let details = '';
@@ -122,11 +125,14 @@ export default {
 
         const data = await response.json();
         const user = data.user;
+        console.log('User data received:', user);
 
         if (!user || !user.role) {
+          console.error('Missing user or role in response');
           throw new Error('Invalid login response');
         }
 
+        console.log('Redirecting based on role:', user.role);
         if (user.role === 'student' || user.role === 'intern') {
           localStorage.setItem('user', JSON.stringify(user));
           localStorage.setItem('internUser', JSON.stringify(user));
@@ -136,6 +142,7 @@ export default {
           localStorage.setItem('staffUser', JSON.stringify(user));
           this.$router.push({ name: 'StaffDashboard' });
         } else {
+          console.error('Unhandled role type:', user.role);
           throw new Error('This login page is only for intern and staff accounts.');
         }
       } catch (error) {
