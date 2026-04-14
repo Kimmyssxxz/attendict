@@ -70,15 +70,9 @@
       <div class="hidden lg:flex lg:w-1/2 relative items-center justify-center  p-12">
 
         
-<<<<<<< HEAD
-        <!-- Central Graphic area -->
-        <div class="relative w-[28rem] h-[28rem] flex items-center justify-center z-10">
-          <DotLottieVue style="height: 1000px; width: 1000px" autoplay loop src="https://lottie.host/b37b7748-1dc6-4cb4-8bf0-05a0b4f7e988/0t7UBpQlw6.lottie" />
-=======
         <!-- Central Circular Graphic area -->
         <div class="relative w-[28rem] h-[28rem] bg-orange-50 rounded-full flex items-center justify-center shadow-sm border border-orange-100 z-10">
           <DotLottieVue style="height: 500px; width: 500px" autoplay loop src="https://lottie.host/6ad83ae1-839d-473d-98ae-3918a1a36e92/vId07eA74k.json" />
->>>>>>> main
         </div>
       </div>
 
