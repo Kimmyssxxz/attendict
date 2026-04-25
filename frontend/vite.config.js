@@ -21,7 +21,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'DICTlogo1.png'],
+      includeAssets: ['favicon.ico', '4.png'],
       workbox: {
         maximumFileSizeToCacheInBytes: 5000000 // Increase limit to 5MB
       },
@@ -32,12 +32,12 @@ export default defineConfig({
         theme_color: '#133e75',
         icons: [
           {
-            src: 'DICTlogo1.png',
+            src: '4.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'DICTlogo1.png',
+            src: '4.png',
             sizes: '512x512',
             type: 'image/png'
           }
