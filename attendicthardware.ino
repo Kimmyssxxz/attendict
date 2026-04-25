@@ -35,6 +35,7 @@
  */
 
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <SPI.h>
@@ -47,8 +48,8 @@
 // --- SETTINGS ---
 const char* ssid = "DICT_Ormin";
 const char* password = "1234567890";
-// Replace with your computer's local IP (e.g. http://192.168.1.5:3001)
-const char* serverUrl = "http://192.168.0.21:3001/api/rfid/scan";
+// Replace with your production Render URL
+const char* serverUrl = "https://atttendict-v2-backend.onrender.com/api/rfid/scan";
 
 // --- PIN DEFINITIONS ---
 #define SS_PIN    5
@@ -193,9 +194,12 @@ void sendScanData(String uid) {
   lcd.setCursor(0, 0);
   lcd.print("Scanning...");
 
+  WiFiClientSecure client;
+  client.setInsecure(); // Skip certificate validation for Render
+
   HTTPClient http;
-  http.setTimeout(15000);
-  http.begin(serverUrl);
+  http.setTimeout(60000); // 60 seconds (Dagdagan ang timeout para sa Render cold start)
+  http.begin(client, serverUrl);
   http.addHeader("Content-Type", "application/json");
 
   StaticJsonDocument<200> doc;
