@@ -2569,6 +2569,14 @@ app.post('/api/rfid/scan', async (req, res) => {
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };
+
+      // For staff, explicitly set the status to 'At Office' when using RFID
+      if (role === 'staff') {
+        payload.staffStatus = 'At Office';
+        payload[`staffStatus${session}`] = 'At Office';
+        payload.locationAM = 'Office'; // Default to Office for RFID
+      }
+
       await attendanceRef.set(payload);
     } else {
       const data = attSnap.data();
@@ -2576,18 +2584,34 @@ app.post('/api/rfid/scan', async (req, res) => {
       // If timed in but not timed out for the current session, then time out
       if (data[`timeIn${session}`] && !data[`timeOut${session}`]) {
         action = 'Time Out';
-        await attendanceRef.update({
+        const updatePayload = {
           [`timeOut${session}`]: timeString,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        };
+
+        // For staff, explicitly set the status to 'At Office' when using RFID
+        if (role === 'staff') {
+          updatePayload.staffStatus = 'At Office';
+          updatePayload[`staffStatusOut${session}`] = 'At Office';
+        }
+
+        await attendanceRef.update(updatePayload);
       } else if (!data[`timeIn${session}`]) {
         // New session (e.g. was timed out for AM, now timing in for PM)
         action = 'Time In';
-        await attendanceRef.update({
+        const updatePayload = {
           [`timeIn${session}`]: timeString,
           [`status${session}`]: 'Present',
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        };
+
+        // For staff, explicitly set the status to 'At Office' when using RFID
+        if (role === 'staff') {
+          updatePayload.staffStatus = 'At Office';
+          updatePayload[`staffStatus${session}`] = 'At Office';
+        }
+
+        await attendanceRef.update(updatePayload);
       } else {
         // Already timed in and out for this session? Maybe allow re-entry or just show status
         return res.json({
