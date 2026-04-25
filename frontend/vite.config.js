@@ -22,6 +22,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'DICTlogo1.png'],
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5000000 // Increase limit to 5MB
+      },
       manifest: {
         name: 'Attendict',
         short_name: 'Attendict',
