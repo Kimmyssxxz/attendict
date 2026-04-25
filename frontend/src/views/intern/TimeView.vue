@@ -632,9 +632,9 @@ export default {
       const msg = typeof n === 'string' ? n : (n.message || '');
       if (!msg) return '';
       // Bold times (e.g., 10:58 AM)
-      let formatted = msg.replace(/(\d{1,2}:\d{2}\s?(?:AM|PM))/gi, '<strong>$1</strong>');
+      let formatted = msg.replace(/(\d{1,2}:\d{2}\s?(?:AM|PM))/gi, '<strong>${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}</strong>');
       // Bold keywords (e.g., updated)
-      formatted = formatted.replace(/(updated)/gi, '<strong>$1</strong>');
+      formatted = formatted.replace(/(updated)/gi, '<strong>${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}</strong>');
       return formatted;
     },
     normalizeLocation(value) {
@@ -956,7 +956,7 @@ export default {
       }
       
       try {
-        const res = await fetch((import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}')/attendance/intern/time-in', {
+        const res = await fetch(${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}attendance/intern/time-in', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ internId: this.internId, location })
@@ -1015,7 +1015,7 @@ export default {
       this.loading = true
       this.loadingType = 'out'
       try {
-        const res = await fetch((import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}')/attendance/intern/time-out', {
+        const res = await fetch(${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}attendance/intern/time-out', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ internId: this.internId })

@@ -513,9 +513,9 @@ export default {
       const msg = typeof n === 'string' ? n : (n.message || '');
       if (!msg) return '';
       // Bold times (e.g., 10:58 AM)
-      let formatted = msg.replace(/(\d{1,2}:\d{2}\s?(?:AM|PM))/gi, '<strong>$1</strong>');
+      let formatted = msg.replace(/(\d{1,2}:\d{2}\s?(?:AM|PM))/gi, '<strong>${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}</strong>');
       // Bold keywords (e.g., updated)
-      formatted = formatted.replace(/(updated)/gi, '<strong>$1</strong>');
+      formatted = formatted.replace(/(updated)/gi, '<strong>${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}</strong>');
       return formatted;
     },
     handleResize() {
