@@ -5,6 +5,8 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
 
+import { VitePWA } from 'vite-plugin-pwa'
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -17,6 +19,28 @@ export default defineConfig({
     }),
     vueDevTools(),
     tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'DICTlogo1.png'],
+      manifest: {
+        name: 'Attendict',
+        short_name: 'Attendict',
+        description: 'Attendance Management System for Interns and Staff',
+        theme_color: '#133e75',
+        icons: [
+          {
+            src: 'DICTlogo1.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'DICTlogo1.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+      }
+    })
   ],
   server: {
     proxy: {
