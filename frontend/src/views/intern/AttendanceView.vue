@@ -427,6 +427,22 @@
               {{ selectedRecord.rejectReason }}
             </span>
           </div>
+
+          <!-- Location Info -->
+          <div class="flex flex-col gap-3 pt-2 mt-2 border-t border-slate-100">
+            <div v-if="selectedRecord.locationAM || selectedRecord.locationPM" class="flex flex-col gap-1">
+              <span class="text-slate-500 text-xs font-bold uppercase tracking-wider">Time In Location</span>
+              <span class="text-slate-700 text-sm leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
+                {{ (selectedRecord.locationPM ? selectedRecord.locationPM.address : selectedRecord.locationAM.address) || 'No address captured' }}
+              </span>
+            </div>
+            <div v-if="selectedRecord.timeOutLocationAM || selectedRecord.timeOutLocationPM" class="flex flex-col gap-1">
+              <span class="text-slate-500 text-xs font-bold uppercase tracking-wider">Time Out Location</span>
+              <span class="text-slate-700 text-sm leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
+                {{ (selectedRecord.timeOutLocationPM ? selectedRecord.timeOutLocationPM.address : selectedRecord.timeOutLocationAM.address) || 'No address captured' }}
+              </span>
+            </div>
+          </div>
         </div>
         <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
           <button @click="closeDetailsModal" class="px-5 py-2.5 rounded-full border-none bg-slate-800 text-white text-sm font-semibold cursor-pointer transition-colors hover:bg-slate-700">Close</button>
@@ -544,6 +560,10 @@ export default {
           totalHours: r.totalHours || '0.0',
           statusAM: r.statusAM || null,
           statusPM: r.statusPM || null,
+          locationAM: r.locationAM || null,
+          locationPM: r.locationPM || null,
+          timeOutLocationAM: r.timeOutLocationAM || null,
+          timeOutLocationPM: r.timeOutLocationPM || null,
           tagging: r.tagging || null,
           tagAM: r.tagAM || null,
           tagPM: r.tagPM || null,

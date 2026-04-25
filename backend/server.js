@@ -1722,7 +1722,7 @@ app.post('/attendance/intern/time-in', async (req, res) => {
 
 app.post('/attendance/intern/time-out', async (req, res) => {
   try {
-    const { internId } = req.body;
+    const { internId, location } = req.body;
 
     if (!internId) {
       return res.status(400).json({ message: 'internId is required' });
@@ -1773,9 +1773,11 @@ app.post('/attendance/intern/time-out', async (req, res) => {
     if (session === 'AM') {
       updated.timeOutAM = timeString;
       updated.totalMinutesAM = totalMinutesForSession;
+      if (location) updated.timeOutLocationAM = location;
     } else {
       updated.timeOutPM = timeString;
       updated.totalMinutesPM = totalMinutesForSession;
+      if (location) updated.timeOutLocationPM = location;
     }
 
     const totalMinutesAM = updated.totalMinutesAM ?? data.totalMinutesAM ?? 0;
@@ -1843,6 +1845,8 @@ app.post('/attendance/intern/time-out', async (req, res) => {
       statusPM: merged.statusPM || null,
       locationAM: merged.locationAM || null,
       locationPM: merged.locationPM || null,
+      timeOutLocationAM: merged.timeOutLocationAM || null,
+      timeOutLocationPM: merged.timeOutLocationPM || null,
       isLocked: !!merged.isLocked,
     };
 

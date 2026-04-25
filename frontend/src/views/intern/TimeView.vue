@@ -1014,11 +1014,47 @@ export default {
       }
       this.loading = true
       this.loadingType = 'out'
+
+      let location = null;
+      if (navigator.geolocation) {
+        try {
+          location = await new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+              (pos) => {
+                resolve({
+                  latitude: pos.coords.latitude,
+                  longitude: pos.coords.longitude,
+                });
+              },
+              (err) => {
+                console.warn('Geolocation error for time-out:', err);
+                resolve(null);
+              },
+              { enableHighAccuracy: true, timeout: 10000 }
+            );
+          });
+        } catch (e) {
+          console.warn('Geolocation exception for time-out:', e);
+        }
+      }
+
+      if (location) {
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${location.latitude}&lon=${location.longitude}`)
+          if (res.ok) {
+            const data = await res.json()
+            if (data && data.display_name) {
+              location.address = data.display_name
+            }
+          }
+        } catch (e) {}
+      }
+
       try {
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}/attendance/intern/time-out`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ internId: this.internId })
+          body: JSON.stringify({ internId: this.internId, location })
         })
 
         const data = await res.json()
