@@ -1851,6 +1851,16 @@ app.post('/attendance/intern/time-out', async (req, res) => {
     };
 
     // Also write a notification for this time out (saved per user & role)
+    let timeOutLocation = null;
+    const rawOutLocation = session === 'AM' ? (merged.timeOutLocationAM || null) : (merged.timeOutLocationPM || null);
+    if (rawOutLocation) {
+      if (typeof rawOutLocation === 'string') {
+        timeOutLocation = rawOutLocation;
+      } else if (typeof rawOutLocation.address === 'string' && rawOutLocation.address.trim() !== '') {
+        timeOutLocation = rawOutLocation.address;
+      }
+    }
+
     const d = new Date(`${dateString}T${timeString}`);
     const fDate = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(d);
     const fTime = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).format(d);
@@ -1866,6 +1876,7 @@ app.post('/attendance/intern/time-out', async (req, res) => {
         time: timeString,
         attendanceDocId: docId,
         status: statusForSession,
+        timeOutLocation,
       },
     });
 
