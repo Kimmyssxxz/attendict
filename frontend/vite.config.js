@@ -21,7 +21,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', '4.png'],
+      includeAssets: ['favicon.ico', '3.png', '4.png'],
       workbox: {
         maximumFileSizeToCacheInBytes: 5000000 // Increase limit to 5MB
       },
