@@ -260,6 +260,7 @@
           </button>
         </div>
       </div>
+    </main>
   </div>
 
   <!-- Success/Error Modal -->
