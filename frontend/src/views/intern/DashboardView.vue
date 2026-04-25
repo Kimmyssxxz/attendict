@@ -342,9 +342,6 @@
                         <div class="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 rounded-full text-[0.7rem] font-bold border border-blue-500/20 backdrop-blur-sm">
                           <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> Present
                         </div>
-                        <div class="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 rounded-full text-[0.7rem] font-bold border border-red-500/20 backdrop-blur-sm">
-                          <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> Holiday
-                        </div>
                       </div>
                     </div>
                     <div class="flex gap-2">
@@ -373,8 +370,7 @@
                           'w-10 h-10 border-none rounded-xl text-[0.95rem] font-semibold flex items-center justify-center cursor-pointer transition-all relative z-10',
                           !day.isCurrentMonth ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100',
                           day.dateKey === calendarSelectedDate ? 'bg-[#133e75] !text-white shadow transform scale-110' : 'bg-transparent',
-                          day.status === 'present' && day.dateKey !== calendarSelectedDate ? 'after:content-[\'\'] after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-blue-500 after:rounded-full' : '',
-                          day.status === 'holiday' && day.dateKey !== calendarSelectedDate ? 'after:content-[\'\'] after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-red-500 after:rounded-full' : ''
+                          day.status === 'present' && day.dateKey !== calendarSelectedDate ? 'after:content-[\'\'] after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-blue-500 after:rounded-full' : ''
                         ]"
                       >
                         {{ day.dayOfMonth }}
@@ -387,8 +383,7 @@
                     <div class="flex justify-between items-center mb-4">
                       <h4 class="m-0 text-base font-semibold text-gray-900">{{ calendarSelectedDetails.displayDate }}</h4>
                       <div :class="['px-3 py-1 rounded-full text-[0.7rem] font-semibold', 
-                        calendarSelectedDetails.statusLabel === 'Present' ? 'bg-green-100 text-green-700' : 
-                        calendarSelectedDetails.statusLabel === 'Holiday' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600']">
+                        calendarSelectedDetails.statusLabel === 'Present' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600']">
                         {{ calendarSelectedDetails.statusLabel }}
                       </div>
                     </div>
@@ -1066,10 +1061,7 @@ export default {
           const isFuture = d.getTime() > today.getTime();
           const isSunday = d.getDay() === 0;
           if (rec) {
-            const tag = (rec.tagAM || rec.tagPM || '').toLowerCase();
-            if (tag && tag.includes('holiday')) {
-              status = 'holiday';
-            } else if (info.minutes > 0) {
+            if (info.minutes > 0) {
               status = 'present';
             }
           } else if (!isFuture) {
@@ -1109,7 +1101,6 @@ export default {
 
       let statusLabel = 'No record';
       if (day.status === 'present') statusLabel = 'Present';
-      else if (day.status === 'holiday') statusLabel = 'Holiday';
 
       let totalHours = 0;
       if (rec) {
