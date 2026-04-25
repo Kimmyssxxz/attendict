@@ -1422,9 +1422,7 @@ app.get('/staff/:id/status', async (req, res) => {
       return res.status(400).json({ message: 'Staff id is required' });
     }
 
-    let staffStatus = null;
-    let updatedAt = null;
-    let source = null;
+    let latestRecord = null;
 
     try {
       const userSnap = await db.collection('users').doc(id).get();
@@ -1440,42 +1438,43 @@ app.get('/staff/:id/status', async (req, res) => {
       console.error('Fetch staffStatus from users failed:', e);
     }
 
-    if (!staffStatus) {
-      const collectionsToTry = ['staff_attendance', 'staffAttendance', 'attendance_staff', 'staff_status'];
-
-      for (const col of collectionsToTry) {
-        try {
-          const tryFields = ['staffId', 'staffid'];
-          let snap = null;
-          for (const field of tryFields) {
-            const s = await db.collection(col).where(field, '==', id).get();
-            if (!s.empty) {
-              snap = s;
-              break;
-            }
+    // Always try to fetch the latest attendance record to get detailed statuses
+    const collectionsToTry = ['staff_attendance', 'staffAttendance', 'attendance_staff', 'staff_status'];
+    for (const col of collectionsToTry) {
+      try {
+        const tryFields = ['staffId', 'staffid'];
+        let snap = null;
+        for (const field of tryFields) {
+          const s = await db.collection(col).where(field, '==', id).get();
+          if (!s.empty) {
+            snap = s;
+            break;
           }
+        }
 
-          if (!snap || snap.empty) continue;
+        if (!snap || snap.empty) continue;
 
-          const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-          docs.sort((a, b) => {
-            const ta = (a.updatedAt && a.updatedAt.toMillis ? a.updatedAt.toMillis() : 0)
-              || (a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0);
-            const tb = (b.updatedAt && b.updatedAt.toMillis ? b.updatedAt.toMillis() : 0)
-              || (b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0);
-            return tb - ta;
-          });
+        const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        docs.sort((a, b) => {
+          const ta = (a.updatedAt && a.updatedAt.toMillis ? a.updatedAt.toMillis() : 0)
+            || (a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0);
+          const tb = (b.updatedAt && b.updatedAt.toMillis ? b.updatedAt.toMillis() : 0)
+            || (b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0);
+          return tb - ta;
+        });
 
-          const latest = docs[0] || null;
-          if (latest && typeof latest.staffStatus === 'string' && latest.staffStatus.trim() !== '') {
+        const latest = docs[0] || null;
+        if (latest) {
+          latestRecord = latest;
+          if (!staffStatus && typeof latest.staffStatus === 'string' && latest.staffStatus.trim() !== '') {
             staffStatus = latest.staffStatus.trim();
             updatedAt = latest.updatedAt || latest.createdAt || null;
             source = col;
-            break;
           }
-        } catch (e) {
-          continue;
+          break;
         }
+      } catch (e) {
+        continue;
       }
     }
 
@@ -1485,6 +1484,16 @@ app.get('/staff/:id/status', async (req, res) => {
       staffStatus: staffStatus || '',
       updatedAt: updatedAt || null,
       source: source || null,
+      // Detailed fields
+      staffStatusAM: latestRecord?.staffStatusAM || '',
+      staffStatusPM: latestRecord?.staffStatusPM || '',
+      staffStatusOutAM: latestRecord?.staffStatusOutAM || '',
+      staffStatusOutPM: latestRecord?.staffStatusOutPM || '',
+      timeInAM: latestRecord?.timeInAM || null,
+      timeOutAM: latestRecord?.timeOutAM || null,
+      timeInPM: latestRecord?.timeInPM || null,
+      timeOutPM: latestRecord?.timeOutPM || null,
+      attendanceDate: latestRecord?.date || null
     });
   } catch (err) {
     console.error('Fetch staff status error:', err);

@@ -119,6 +119,43 @@
                       <span class="w-2 h-2 rounded-full" :class="getStatusDotClass(s.staffStatus)"></span>
                       {{ s.staffStatus || 'Off Duty' }}
                     </div>
+
+                    <!-- Detailed Status Section Desktop -->
+                    <div v-if="s.staffStatusData && s.staffStatusData.attendanceDate === todayDate && (s.staffStatusData.timeInAM || s.staffStatusData.timeInPM)" class="mt-4 pt-4 border-t border-slate-100 w-full text-left">
+                      <div class="text-[0.7rem] font-bold text-slate-400 uppercase tracking-wider mb-3">Today's Log</div>
+                      
+                      <!-- AM Session Details -->
+                      <div v-if="s.staffStatusData.timeInAM" class="mb-4 last:mb-0">
+                        <div class="flex items-center justify-between mb-1.5">
+                          <span class="text-[0.75rem] font-bold text-slate-700">AM Session</span>
+                          <span class="text-[0.7rem] text-slate-400 font-medium">{{ s.staffStatusData.timeInAM }} - {{ s.staffStatusData.timeOutAM || '...' }}</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                          <div class="px-2 py-0.5 rounded text-[0.65rem] font-bold flex items-center gap-1 border shadow-sm" :class="getStatusClass(s.staffStatusData.staffStatusAM)">
+                            <span class="opacity-70">IN:</span> {{ s.staffStatusData.staffStatusAM || 'At Office' }}
+                          </div>
+                          <div v-if="s.staffStatusData.timeOutAM" class="px-2 py-0.5 rounded text-[0.65rem] font-bold flex items-center gap-1 border shadow-sm" :class="getStatusClass(s.staffStatusData.staffStatusOutAM)">
+                            <span class="opacity-70">OUT:</span> {{ s.staffStatusData.staffStatusOutAM || 'At Office' }}
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- PM Session Details -->
+                      <div v-if="s.staffStatusData.timeInPM" class="last:mb-0">
+                        <div class="flex items-center justify-between mb-1.5">
+                          <span class="text-[0.75rem] font-bold text-slate-700">PM Session</span>
+                          <span class="text-[0.7rem] text-slate-400 font-medium">{{ s.staffStatusData.timeInPM }} - {{ s.staffStatusData.timeOutPM || '...' }}</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                          <div class="px-2 py-0.5 rounded text-[0.65rem] font-bold flex items-center gap-1 border shadow-sm" :class="getStatusClass(s.staffStatusData.staffStatusPM)">
+                            <span class="opacity-70">IN:</span> {{ s.staffStatusData.staffStatusPM || 'At Office' }}
+                          </div>
+                          <div v-if="s.staffStatusData.timeOutPM" class="px-2 py-0.5 rounded text-[0.65rem] font-bold flex items-center gap-1 border shadow-sm" :class="getStatusClass(s.staffStatusData.staffStatusOutPM)">
+                            <span class="opacity-70">OUT:</span> {{ s.staffStatusData.staffStatusOutPM || 'At Office' }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -191,15 +228,54 @@
               </div>
             </div>
 
-            <!-- Status Pill Mobile -->
-            <div class="flex justify-end pt-2 border-t border-gray-50">
-               <div class="px-4 py-1.5 rounded-full text-[0.7rem] font-bold inline-flex items-center justify-center gap-1.5 border" 
-                    :class="getStatusClass(s.staffStatus)">
-                 <span class="w-[6px] h-[6px] rounded-full" 
-                       :class="getStatusDotClass(s.staffStatus)"></span>
-                 {{ s.staffStatus || 'Off Duty' }}
-               </div>
-            </div>
+             <!-- Status Pill Mobile -->
+             <div class="flex flex-col gap-3 pt-3 border-t border-gray-50">
+                <div class="flex justify-end">
+                   <div class="px-4 py-1.5 rounded-full text-[0.7rem] font-bold inline-flex items-center justify-center gap-1.5 border" 
+                        :class="getStatusClass(s.staffStatus)">
+                     <span class="w-[6px] h-[6px] rounded-full" 
+                           :class="getStatusDotClass(s.staffStatus)"></span>
+                     {{ s.staffStatus || 'Off Duty' }}
+                   </div>
+                </div>
+
+                <!-- Detailed Status Section Mobile -->
+                <div v-if="s.staffStatusData && s.staffStatusData.attendanceDate === todayDate && (s.staffStatusData.timeInAM || s.staffStatusData.timeInPM)" class="bg-gray-50/50 rounded-xl p-3 flex flex-col gap-3 border border-gray-100/50">
+                  <div class="text-[0.65rem] font-bold text-gray-400 uppercase tracking-widest px-1">Today's Log</div>
+                  
+                  <!-- AM Session -->
+                  <div v-if="s.staffStatusData.timeInAM" class="flex flex-col gap-2">
+                    <div class="flex items-center justify-between px-1">
+                      <span class="text-[0.7rem] font-bold text-gray-700">AM Session</span>
+                      <span class="text-[0.65rem] text-gray-400 font-medium">{{ s.staffStatusData.timeInAM }} - {{ s.staffStatusData.timeOutAM || '...' }}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                      <div class="px-2 py-1 rounded-lg text-[0.65rem] font-bold flex items-center gap-1 border" :class="getStatusClass(s.staffStatusData.staffStatusAM)">
+                        <span class="opacity-60">IN:</span> {{ s.staffStatusData.staffStatusAM || 'At Office' }}
+                      </div>
+                      <div v-if="s.staffStatusData.timeOutAM" class="px-2 py-1 rounded-lg text-[0.65rem] font-bold flex items-center gap-1 border" :class="getStatusClass(s.staffStatusData.staffStatusOutAM)">
+                        <span class="opacity-60">OUT:</span> {{ s.staffStatusData.staffStatusOutAM || 'At Office' }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- PM Session -->
+                  <div v-if="s.staffStatusData.timeInPM" class="flex flex-col gap-2">
+                    <div class="flex items-center justify-between px-1">
+                      <span class="text-[0.7rem] font-bold text-gray-700">PM Session</span>
+                      <span class="text-[0.65rem] text-gray-400 font-medium">{{ s.staffStatusData.timeInPM }} - {{ s.staffStatusData.timeOutPM || '...' }}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                      <div class="px-2 py-1 rounded-lg text-[0.65rem] font-bold flex items-center gap-1 border" :class="getStatusClass(s.staffStatusData.staffStatusPM)">
+                        <span class="opacity-60">IN:</span> {{ s.staffStatusData.staffStatusPM || 'At Office' }}
+                      </div>
+                      <div v-if="s.staffStatusData.timeOutPM" class="px-2 py-1 rounded-lg text-[0.65rem] font-bold flex items-center gap-1 border" :class="getStatusClass(s.staffStatusData.staffStatusOutPM)">
+                        <span class="opacity-60">OUT:</span> {{ s.staffStatusData.staffStatusOutPM || 'At Office' }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+             </div>
           </div>
         </template>
       </main>
@@ -263,6 +339,7 @@ export default {
       unreadCount: 0,
       showNotifications: false,
       isDesktop: window.innerWidth >= 1024,
+      todayDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD in local time
     }
   },
   created() {
@@ -414,18 +491,23 @@ export default {
             return {
               id: s.id,
               staffStatus: (json && typeof json.staffStatus === 'string') ? json.staffStatus : '',
+              staffStatusData: json || null,
             }
           } catch {
-            return { id: s && s.id, staffStatus: '' }
+            return { id: s && s.id, staffStatus: '', staffStatusData: null }
           }
         })
       )
 
-      const map = new Map(results.map((r) => [r.id, r.staffStatus]))
-      this.staff = this.staff.map((s) => ({
-        ...s,
-        staffStatus: map.get(s.id) || s.staffStatus || '',
-      }))
+      const map = new Map(results.map((r) => [r.id, r]))
+      this.staff = this.staff.map((s) => {
+        const statusObj = map.get(s.id)
+        return {
+          ...s,
+          staffStatus: statusObj?.staffStatus || s.staffStatus || '',
+          staffStatusData: statusObj?.staffStatusData || null
+        }
+      })
     },
     getStatusClass(status) {
       switch (status) {
