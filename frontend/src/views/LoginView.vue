@@ -8,7 +8,7 @@
         <img src="/3.png" alt="Attendict Logo" class="h-10 sm:h-12 w-auto object-contain"/>
       </div>
       <h1 class="text-3xl font-bold text-gray-900 mb-1">Hello Again!</h1>
-      <p class="text-gray-500 text-base mb-8">Welcome back, you've been missed.</p>
+      <p class="text-gray-500 text-base mb-8 text-center">Welcome back, you've been missed.</p>
 
       <form @submit.prevent="handleLogin" class="w-full flex flex-col gap-4">
         <div class="relative">
@@ -95,7 +95,7 @@
       <div class="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 sm:p-12 z-10 pt-24 ">
         <div class="w-full max-w-md flex flex-col items-center lg:items-stretch text-center lg:text-left">
           <h1 class="text-4xl text-gray-900 font-semibold ">Hello Again!</h1>
-          <p class="text-gray-500 mb-8 mt-2 text-base leading-relaxed">
+          <p class="text-gray-500 mb-8 mt-2 text-base leading-relaxed text-center">
             Welcome back, you've been missed.
           </p>
 
