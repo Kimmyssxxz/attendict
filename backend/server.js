@@ -1075,7 +1075,10 @@ app.post('/auth/intern/register', async (req, res) => {
       password,
     } = req.body;
 
+    console.log('Intern registration request for:', email);
+
     if (!username || !firstName || !lastName || !email || !schoolOrUniversity || !assignedOffice || !position || !password) {
+      console.log('Missing fields:', { username: !!username, firstName: !!firstName, lastName: !!lastName, email: !!email, schoolOrUniversity: !!schoolOrUniversity, assignedOffice: !!assignedOffice, position: !!position, password: !!password });
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
@@ -1083,6 +1086,7 @@ app.post('/auth/intern/register', async (req, res) => {
 
     const existingSnap = await usersRef.where('username', '==', username).limit(1).get();
     if (!existingSnap.empty) {
+      console.log('Username exists:', username);
       return res.status(409).json({ message: 'Username already exists' });
     }
 
@@ -1094,6 +1098,7 @@ app.post('/auth/intern/register', async (req, res) => {
     const otpCode = generateOTP();
     const otpExpiresAt = new Date(Date.now() + 10 * 60000); // 10 minutes
 
+    console.log('Creating doc in users collection...');
     const docRef = await db.collection('users').add({
       username,
       firstName,
@@ -1119,15 +1124,22 @@ app.post('/auth/intern/register', async (req, res) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    await sendOtpEmail(email, otpCode);
+    console.log('Doc created with ID:', docRef.id);
+
+    try {
+      await sendOtpEmail(email, otpCode);
+      console.log('OTP email sent to:', email);
+    } catch (emailErr) {
+      console.error('Email sending failed but continuing:', emailErr);
+    }
 
     return res.status(201).json({
       message: 'Intern registered successfully',
       userId: docRef.id,
     });
   } catch (err) {
-    console.error('Intern register error:', err);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error('Intern register CRASH:', err);
+    return res.status(500).json({ message: 'Internal server error: ' + err.message });
   }
 });
 
