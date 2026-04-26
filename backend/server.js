@@ -465,7 +465,10 @@ async function createUserNotification(userId, { title, message, type, metadata }
 
     let role = null;
     try {
-      const userSnap = await db.collection('users').doc(userId).get();
+      let userSnap = await db.collection('users').doc(userId).get();
+      if (!userSnap.exists) {
+        userSnap = await db.collection('admins').doc(userId).get();
+      }
       if (userSnap.exists) {
         const user = userSnap.data();
         role = user.role || null;
@@ -500,7 +503,8 @@ async function loginWithRole(req, res, expectedRole) {
       return res.status(400).json({ message: 'Username and password are required' });
     }
 
-    const usersRef = db.collection('users');
+    const collectionName = expectedRole === 'admin' ? 'admins' : 'users';
+    const usersRef = db.collection(collectionName);
     const usernameNormalized = String(username || '').trim();
     const usernameCandidates = Array.from(
       new Set([
@@ -2225,6 +2229,30 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Backend server running on port ${PORT}`);
 });
 
+async function ensureAdminAccount() {
+  try {
+    const adminRef = db.collection('admins');
+    const snap = await adminRef.limit(1).get();
+    if (snap.empty) {
+      console.log('[Startup] No admin account found in "admins" collection. Creating default admin...');
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      await adminRef.add({
+        username: 'admin',
+        password: hashedPassword,
+        role: 'admin',
+        firstName: 'System',
+        lastName: 'Administrator',
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+      console.log('[Startup] Default admin created: username="admin", password="admin123"');
+    }
+  } catch (e) {
+    console.error('[Startup] Failed to ensure admin account:', e);
+  }
+}
+ensureAdminAccount();
+
 // Update basic user info (school, phone, email, etc.)
 app.put('/users/:id/info', async (req, res) => {
   try {
@@ -2335,8 +2363,13 @@ app.post('/users/:id/change-password', async (req, res) => {
       return res.status(400).json({ message: 'Current password and new password are required' });
     }
 
-    const userRef = db.collection('users').doc(id);
-    const snap = await userRef.get();
+    let userRef = db.collection('users').doc(id);
+    let snap = await userRef.get();
+    if (!snap.exists) {
+      userRef = db.collection('admins').doc(id);
+      snap = await userRef.get();
+    }
+    
     if (!snap.exists) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -2384,8 +2417,15 @@ app.post('/users/:id/change-username', async (req, res) => {
       return res.status(400).json({ message: 'New username and password are required' });
     }
 
-    const userRef = db.collection('users').doc(id);
-    const snap = await userRef.get();
+    let userRef = db.collection('users').doc(id);
+    let snap = await userRef.get();
+    let colName = 'users';
+    if (!snap.exists) {
+      userRef = db.collection('admins').doc(id);
+      snap = await userRef.get();
+      colName = 'admins';
+    }
+
     if (!snap.exists) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -2399,8 +2439,8 @@ app.post('/users/:id/change-username', async (req, res) => {
 
     const cleanUsername = newUsername.trim();
 
-    // Check if new username is already taken
-    const usernameTaken = await db.collection('users')
+    // Check if new username is already taken in the same collection
+    const usernameTaken = await db.collection(colName)
       .where('username', '==', cleanUsername)
       .limit(1)
       .get();
