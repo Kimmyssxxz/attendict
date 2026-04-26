@@ -851,6 +851,13 @@ export default {
             assignedOffice: this.newIntern.assignedOffice || '',
             schoolOrUniversity: this.newIntern.schoolOrUniversity || '',
             ojtRequiredHours: this.newIntern.ojtRequiredHours ?? null,
+            course: this.newIntern.course || '',
+            yearLevel: this.newIntern.yearLevel || '',
+            address: this.newIntern.address || '',
+            gender: this.newIntern.gender || '',
+            dateOfBirth: this.newIntern.dateOfBirth || '',
+            startDate: this.newIntern.startDate || '',
+            endDate: this.newIntern.endDate || '',
             position: 'intern', // Default for this view
           }),
         });
