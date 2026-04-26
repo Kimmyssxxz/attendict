@@ -2371,6 +2371,64 @@ app.post('/users/:id/change-password', async (req, res) => {
   }
 });
 
+// Change user username with password verification
+app.post('/users/:id/change-username', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newUsername, password } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: 'User id is required' });
+    }
+    if (!newUsername || !password) {
+      return res.status(400).json({ message: 'New username and password are required' });
+    }
+
+    const userRef = db.collection('users').doc(id);
+    const snap = await userRef.get();
+    if (!snap.exists) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const user = snap.data();
+    // Verify current hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password || '');
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: 'Incorrect password' });
+    }
+
+    const cleanUsername = newUsername.trim();
+
+    // Check if new username is already taken
+    const usernameTaken = await db.collection('users')
+      .where('username', '==', cleanUsername)
+      .limit(1)
+      .get();
+    
+    if (!usernameTaken.empty && usernameTaken.docs[0].id !== id) {
+      return res.status(400).json({ message: 'Username is already taken' });
+    }
+
+    await userRef.update({
+      username: cleanUsername,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Create a notification
+    await createUserNotification(id, {
+      title: 'Username Changed',
+      message: `Your username was updated to: ${cleanUsername}`,
+      type: 'username_change',
+      metadata: { newUsername: cleanUsername },
+    });
+
+    return res.json({ message: 'Username updated successfully' });
+  } catch (err) {
+    console.error('Change username error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 // Fetch today's attendance record for an intern
 app.get('/attendance/intern/today', async (req, res) => {
   try {
