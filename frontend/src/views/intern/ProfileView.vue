@@ -164,6 +164,10 @@
                   <input type="text" v-model="intern.schoolOrUniversity" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm" />
                 </div>
                 <div class="flex flex-col gap-2">
+                  <label class="text-xs font-normal text-slate-700">Course / Program</label>
+                  <input type="text" v-model="intern.course" placeholder="e.g. BSIT" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm" />
+                </div>
+                <div class="flex flex-col gap-2">
                   <label class="text-xs font-normal text-slate-700">OJT Required Hours</label>
                   <input type="number" v-model.number="intern.ojtRequiredHours" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm" />
                 </div>

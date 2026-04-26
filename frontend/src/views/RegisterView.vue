@@ -114,13 +114,19 @@
           placeholder="Assigned Office / Company"
         />
 
-        <template v-if="form.role === 'student'">
           <input
             v-model="form.schoolOrUniversity"
             type="text"
             required
             class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:border-blue-500 focus:outline-none transition-colors"
             placeholder="School / University"
+          />
+          <input
+            v-model="form.course"
+            type="text"
+            required
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:border-blue-500 focus:outline-none transition-colors"
+            placeholder="Course (e.g. BSIT)"
           />
           <input
             v-model.number="form.ojtRequiredHours"
@@ -366,6 +372,17 @@
                 />
               </div>
 
+              <div v-if="form.role === 'student'" class="relative sm:col-span-2">
+                <input
+                  id="course"
+                  v-model="form.course"
+                  type="text"
+                  required
+                  class="w-full px-4 py-2.5 border border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors"
+                  placeholder="Course (e.g. BSIT)"
+                />
+              </div>
+
               <div v-if="form.role === 'student'" class="relative">
                 <input
                   id="ojtRequiredHours"
@@ -513,6 +530,7 @@ export default {
         position: '',
         assignedOffice: '',
         schoolOrUniversity: '',
+        course: '',
         ojtRequiredHours: null,
         password: '',
         confirmPassword: ''
@@ -577,6 +595,7 @@ export default {
             position: this.form.position,
             assignedOffice: this.form.assignedOffice,
             schoolOrUniversity: this.form.schoolOrUniversity || '',
+            course: this.form.course || '',
             ojtRequiredHours: this.form.ojtRequiredHours ?? null,
           }),
         });

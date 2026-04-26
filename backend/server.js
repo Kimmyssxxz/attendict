@@ -1062,12 +1062,10 @@ app.post('/auth/admin/login', async (req, res) => {
 app.post('/auth/intern/register', async (req, res) => {
   try {
     const {
-      username,
-      firstName,
-      middleName,
-      lastName,
       email,
       schoolOrUniversity,
+      course,
+      ojtRequiredHours,
       assignedOffice,
       position,
       password,
@@ -1100,6 +1098,8 @@ app.post('/auth/intern/register', async (req, res) => {
       lastName,
       email,
       schoolOrUniversity,
+      course: course || '',
+      ojtRequiredHours: ojtRequiredHours ?? null,
       assignedOffice,
       position,
       role: 'student',
