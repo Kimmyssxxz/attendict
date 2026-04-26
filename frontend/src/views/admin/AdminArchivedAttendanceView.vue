@@ -14,6 +14,24 @@
             <h1 class="text-3xl font-semibold text-gray-900">Archived Attendance Logs</h1>
             <p class="text-gray-500 ">View staff attendance logs that have been archived.</p>
           </div>
+          <div class="ml-auto flex gap-3">
+            <button 
+              @click="showRestoreAllModal = true"
+              class="px-4 py-2 bg-green-50 text-green-700 rounded-xl text-sm font-bold border border-green-100 hover:bg-green-100 transition-all flex items-center gap-2"
+              :disabled="loading || archivedAttendances.length === 0"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path></svg>
+              Restore All
+            </button>
+            <button 
+              @click="showDeleteAllModal = true"
+              class="px-4 py-2 bg-red-50 text-red-700 rounded-xl text-sm font-bold border border-red-100 hover:bg-red-100 transition-all flex items-center gap-2"
+              :disabled="loading || archivedAttendances.length === 0"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              Delete All
+            </button>
+          </div>
         </div>
       </header>
 
@@ -137,73 +155,121 @@
 
     </div>
  
-     <!-- Restore Confirmation Modal -->
-     <Transition name="modal">
-       <div v-if="showRestoreModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center border border-gray-100">
-           <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <polyline points="9 14 4 9 9 4"></polyline>
-               <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
-             </svg>
-           </div>
-           <h3 class="text-2xl font-bold text-gray-900 mb-2">Restore Attendance Log</h3>
-           <p class="text-gray-600 mb-8">
-             Restore archived attendance for <span class="font-bold text-gray-900">{{ getStaffName(attendanceToRestore?.staffId) }}</span>?
-           </p>
-           <div class="flex gap-3">
-             <button 
-               @click="showRestoreModal = false"
-               class="flex-1 py-3 bg-gray-50 text-gray-700 rounded-xl font-bold hover:bg-gray-100 transition-all cursor-pointer"
-               :disabled="restoring"
-             >
-               Cancel
-             </button>
-             <button 
-               @click="confirmRestore"
-               class="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all cursor-pointer disabled:opacity-70"
-               :disabled="restoring"
-             >
-               {{ restoring ? 'Restoring...' : 'Confirm Restore' }}
-             </button>
-           </div>
-         </div>
-       </div>
-     </Transition>
+      <!-- Restore Confirmation Modal -->
+      <Transition name="modal">
+        <div v-if="showRestoreModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center border border-gray-100">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polyline points="9 14 4 9 9 4"></polyline>
+                <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">Restore Attendance Log</h3>
+            <p class="text-gray-600 mb-8">
+              Restore archived attendance for <span class="font-bold text-gray-900">{{ getStaffName(attendanceToRestore?.staffId) }}</span>?
+            </p>
+            <div class="flex gap-3">
+              <button 
+                @click="showRestoreModal = false"
+                class="flex-1 py-3 bg-gray-50 text-gray-700 rounded-xl font-bold hover:bg-gray-100 transition-all cursor-pointer"
+                :disabled="restoring"
+              >
+                Cancel
+              </button>
+              <button 
+                @click="confirmRestore"
+                class="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all cursor-pointer disabled:opacity-70"
+                :disabled="restoring"
+              >
+                {{ restoring ? 'Restoring...' : 'Confirm Restore' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
  
-     <!-- Delete Confirmation Modal -->
-     <Transition name="modal">
-       <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center border border-gray-100">
-           <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-             <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <path d="M3 6h18"></path>
-               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-             </svg>
-           </div>
-           <h3 class="text-2xl font-bold text-red-600 mb-2">Delete Permanently</h3>
-           <p class="text-gray-600 mb-8">
-             Are you sure you want to PERMANENTLY delete the attendance for <span class="font-bold text-gray-900">{{ getStaffName(attendanceToDelete?.staffId) }}</span>? This action cannot be undone.
-           </p>
-           <div class="flex gap-3">
-             <button 
-               @click="showDeleteModal = false"
-               class="flex-1 py-3 bg-gray-50 text-gray-700 rounded-xl font-bold hover:bg-gray-100 transition-all cursor-pointer"
-               :disabled="deleting"
-             >
-               Cancel
-             </button>
-             <button 
-               @click="confirmDelete"
-               class="flex-1 py-3 bg-[#b92e2b] text-white rounded-xl font-bold hover:bg-red-700 transition-all cursor-pointer disabled:opacity-70"
-               :disabled="deleting"
-             >
-               {{ deleting ? 'Deleting...' : 'Confirm Delete' }}
-             </button>
-           </div>
-         </div>
-       </div>
-     </Transition>
+      <!-- Delete Confirmation Modal -->
+      <Transition name="modal">
+        <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center border border-gray-100">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-red-600 mb-2">Delete Permanently</h3>
+            <p class="text-gray-600 mb-8">
+              Are you sure you want to PERMANENTLY delete the attendance for <span class="font-bold text-gray-900">{{ getStaffName(attendanceToDelete?.staffId) }}</span>? This action cannot be undone.
+            </p>
+            <div class="flex gap-3">
+              <button 
+                @click="showDeleteModal = false"
+                class="flex-1 py-3 bg-gray-50 text-gray-700 rounded-xl font-bold hover:bg-gray-100 transition-all cursor-pointer"
+                :disabled="deleting"
+              >
+                Cancel
+              </button>
+              <button 
+                @click="confirmDelete"
+                class="flex-1 py-3 bg-[#b92e2b] text-white rounded-xl font-bold hover:bg-red-700 transition-all cursor-pointer disabled:opacity-70"
+                :disabled="deleting"
+              >
+                {{ deleting ? 'Deleting...' : 'Confirm Delete' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Restore All Confirmation Modal -->
+      <Transition name="modal">
+        <div v-if="showRestoreAllModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center border border-gray-100">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polyline points="9 14 4 9 9 4"></polyline>
+                <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">Restore All Logs</h3>
+            <p class="text-gray-600 mb-8">
+              Are you sure you want to restore <span class="font-bold text-gray-900">{{ archivedAttendances.length }}</span> archived attendance records?
+            </p>
+            <div class="flex gap-3">
+              <button @click="showRestoreAllModal = false" class="flex-1 py-3 bg-gray-50 text-gray-700 rounded-xl font-bold hover:bg-gray-100 transition-all cursor-pointer">Cancel</button>
+              <button @click="confirmRestoreAll" class="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all cursor-pointer disabled:opacity-70" :disabled="restoringAll">
+                {{ restoringAll ? 'Restoring...' : 'Confirm Restore All' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Delete All Confirmation Modal -->
+      <Transition name="modal">
+        <div v-if="showDeleteAllModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center border border-gray-100">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-red-600 mb-2">Delete All Permanently</h3>
+            <p class="text-gray-600 mb-8">
+              Are you sure you want to PERMANENTLY delete <span class="font-bold text-gray-900">{{ archivedAttendances.length }}</span> records? This will also delete all associated photos and documents. This action cannot be undone.
+            </p>
+            <div class="flex gap-3">
+              <button @click="showDeleteAllModal = false" class="flex-1 py-3 bg-gray-50 text-gray-700 rounded-xl font-bold hover:bg-gray-100 transition-all cursor-pointer">Cancel</button>
+              <button @click="confirmDeleteAll" class="flex-1 py-3 bg-[#b92e2b] text-white rounded-xl font-bold hover:bg-red-700 transition-all cursor-pointer disabled:opacity-70" :disabled="deletingAll">
+                {{ deletingAll ? 'Deleting All...' : 'Confirm Delete All' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
   </div>
 </template>
 
@@ -212,8 +278,9 @@ import AdminSidebar from './AdminSidebar.vue'
 import TableSkeleton from '../../components/skeletons/TableSkeleton.vue'
 import { mapActions, mapState } from 'pinia'
 import { useStaffAttendanceStore } from '../../stores/staffAttendanceStore'
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore'
-import { db } from '../../firebase.js'
+import { doc, updateDoc, deleteDoc, serverTimestamp, writeBatch } from 'firebase/firestore'
+import { ref as sRef, deleteObject } from 'firebase/storage'
+import { db, storage } from '../../firebase.js'
 
 export default {
   name: 'AdminArchivedAttendanceView',
@@ -226,10 +293,14 @@ export default {
       searchQuery: '',
       showRestoreModal: false,
       showDeleteModal: false,
+      showRestoreAllModal: false,
+      showDeleteAllModal: false,
       attendanceToRestore: null,
       attendanceToDelete: null,
       restoring: false,
       deleting: false,
+      restoringAll: false,
+      deletingAll: false,
     }
   },
   computed: {
@@ -327,8 +398,13 @@ export default {
       if (!this.attendanceToDelete) return
       this.deleting = true
       try {
+        // 1. Delete associated files from Storage
+        await this.deleteAttendanceFiles(this.attendanceToDelete)
+
+        // 2. Delete from Firestore
         const res = await this.deleteStaffAttendance(this.attendanceToDelete.id)
         if (!res.success) throw new Error(res.error)
+        
         this.showDeleteModal = false
         this.attendanceToDelete = null
       } catch (e) {
@@ -336,6 +412,105 @@ export default {
         alert('Failed to delete log.')
       } finally {
         this.deleting = false
+      }
+    },
+
+    async confirmRestoreAll() {
+      if (this.archivedAttendances.length === 0) return
+      this.restoringAll = true
+      try {
+        const batch = writeBatch(db)
+        const store = useStaffAttendanceStore()
+        
+        this.archivedAttendances.forEach(att => {
+          const docRef = doc(db, 'staff_attendance', att.id)
+          batch.update(docRef, {
+            isArchived: false,
+            updatedAt: serverTimestamp()
+          })
+          
+          const index = store.staffAttendances.findIndex(a => a.id === att.id)
+          if (index !== -1) {
+            store.staffAttendances[index].isArchived = false
+          }
+        })
+        
+        await batch.commit()
+        this.showRestoreAllModal = false
+      } catch (e) {
+        console.error("Error restoring all logs:", e)
+        alert("Failed to restore all logs.")
+      } finally {
+        this.restoringAll = false
+      }
+    },
+
+    async confirmDeleteAll() {
+      if (this.archivedAttendances.length === 0) return
+      this.deletingAll = true
+      try {
+        const store = useStaffAttendanceStore()
+        const recordsToDelete = [...this.archivedAttendances]
+
+        // 1. Delete all associated files from Storage
+        for (const att of recordsToDelete) {
+          await this.deleteAttendanceFiles(att)
+        }
+
+        // 2. Delete from Firestore (Batched)
+        const batchSize = 500
+        for (let i = 0; i < recordsToDelete.length; i += batchSize) {
+          const batch = writeBatch(db)
+          const chunk = recordsToDelete.slice(i, i + batchSize)
+          chunk.forEach(att => {
+            batch.delete(doc(db, 'staff_attendance', att.id))
+            store.staffAttendances = store.staffAttendances.filter(a => a.id !== att.id)
+          })
+          await batch.commit()
+        }
+
+        this.showDeleteAllModal = false
+      } catch (e) {
+        console.error("Error deleting all logs:", e)
+        alert("Failed to delete all logs.")
+      } finally {
+        this.deletingAll = false
+      }
+    },
+
+    async deleteAttendanceFiles(att) {
+      const urls = [
+        att.photoUrl,
+        att.photoOutUrlAM,
+        att.photoUrlPM,
+        att.photoOutUrlPM,
+        att.leaveDocumentUrl,
+        ...(Array.isArray(att.leaveDocumentUrls) ? att.leaveDocumentUrls : [])
+      ].filter(url => url && typeof url === 'string' && url.includes('firebasestorage.googleapis.com'))
+
+      for (const url of urls) {
+        try {
+          const path = this.extractStoragePath(url)
+          if (path) {
+            const fileRef = sRef(storage, path)
+            await deleteObject(fileRef)
+          }
+        } catch (err) {
+          console.warn(`Could not delete file at ${url}:`, err)
+          // Continue even if one file fails
+        }
+      }
+    },
+
+    extractStoragePath(url) {
+      try {
+        // Firebase Storage URL format: .../o/path%2Fto%2Ffile.ext?alt=media...
+        const part = url.split('/o/')[1]
+        if (!part) return null
+        const encodedPath = part.split('?')[0]
+        return decodeURIComponent(encodedPath)
+      } catch (e) {
+        return null
       }
     }
   },

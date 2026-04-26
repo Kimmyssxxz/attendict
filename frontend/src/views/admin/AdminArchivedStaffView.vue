@@ -15,6 +15,24 @@
             <h1 class="text-3xl font-semibold text-gray-900">Archived Staff Records</h1>
             <p class="text-gray-500 ">View staff profiles that have been archived.</p>
           </div>
+          <div class="ml-auto flex gap-3">
+            <button 
+              @click="showRestoreAllModal = true"
+              class="px-4 py-2 bg-green-50 text-green-700 rounded-xl text-sm font-bold border border-green-100 hover:bg-green-100 transition-all flex items-center gap-2"
+              :disabled="loading || archivedStaff.length === 0"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path></svg>
+              Restore All
+            </button>
+            <button 
+              @click="showDeleteAllModal = true"
+              class="px-4 py-2 bg-red-50 text-red-700 rounded-xl text-sm font-bold border border-red-100 hover:bg-red-100 transition-all flex items-center gap-2"
+              :disabled="loading || archivedStaff.length === 0"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              Delete All
+            </button>
+          </div>
         </div>
       </header>
 
@@ -132,73 +150,121 @@
 
     </div>
  
-     <!-- Restore Confirmation Modal -->
-     <Transition name="modal">
-       <div v-if="showRestoreModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center border border-gray-100">
-           <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <polyline points="9 14 4 9 9 4"></polyline>
-               <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
-             </svg>
-           </div>
-           <h3 class="text-2xl font-bold text-gray-900 mb-2">Restore Staff</h3>
-           <p class="text-gray-600 mb-8">
-             Restore archived staff member <span class="font-bold text-gray-900">{{ getStaffName(staffToRestore) }}</span>? Their attendance logs will also be restored.
-           </p>
-           <div class="flex gap-3">
-             <button 
-               @click="showRestoreModal = false"
-               class="flex-1 py-3 bg-gray-50 text-gray-700 rounded-xl font-bold hover:bg-gray-100 transition-all cursor-pointer"
-               :disabled="restoring"
-             >
-               Cancel
-             </button>
-             <button 
-               @click="confirmRestore"
-               class="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all cursor-pointer disabled:opacity-70"
-               :disabled="restoring"
-             >
-               {{ restoring ? 'Restoring...' : 'Confirm Restore' }}
-             </button>
-           </div>
-         </div>
-       </div>
-     </Transition>
+      <!-- Restore Confirmation Modal -->
+      <Transition name="modal">
+        <div v-if="showRestoreModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center border border-gray-100">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polyline points="9 14 4 9 9 4"></polyline>
+                <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">Restore Staff</h3>
+            <p class="text-gray-600 mb-8">
+              Restore archived staff member <span class="font-bold text-gray-900">{{ getStaffName(staffToRestore) }}</span>? Their attendance logs will also be restored.
+            </p>
+            <div class="flex gap-3">
+              <button 
+                @click="showRestoreModal = false"
+                class="flex-1 py-3 bg-gray-50 text-gray-700 rounded-xl font-bold hover:bg-gray-100 transition-all cursor-pointer"
+                :disabled="restoring"
+              >
+                Cancel
+              </button>
+              <button 
+                @click="confirmRestore"
+                class="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all cursor-pointer disabled:opacity-70"
+                :disabled="restoring"
+              >
+                {{ restoring ? 'Restoring...' : 'Confirm Restore' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
  
-     <!-- Delete Confirmation Modal -->
-     <Transition name="modal">
-       <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center border border-gray-100">
-           <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-             <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <path d="M3 6h18"></path>
-               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-             </svg>
-           </div>
-           <h3 class="text-2xl font-bold text-red-600 mb-2">Delete Permanently</h3>
-           <p class="text-gray-600 mb-8">
-             Are you sure you want to PERMANENTLY delete <span class="font-bold text-gray-900">{{ getStaffName(staffToDelete) }}</span>? This action cannot be undone.
-           </p>
-           <div class="flex gap-3">
-             <button 
-               @click="showDeleteModal = false"
-               class="flex-1 py-3 bg-gray-50 text-gray-700 rounded-xl font-bold hover:bg-gray-100 transition-all cursor-pointer"
-               :disabled="deleting"
-             >
-               Cancel
-             </button>
-             <button 
-               @click="confirmDelete"
-               class="flex-1 py-3 bg-[#b92e2b] text-white rounded-xl font-bold hover:bg-red-700 transition-all cursor-pointer disabled:opacity-70"
-               :disabled="deleting"
-             >
-               {{ deleting ? 'Deleting...' : 'Confirm Delete' }}
-             </button>
-           </div>
-         </div>
-       </div>
-     </Transition>
+      <!-- Delete Confirmation Modal -->
+      <Transition name="modal">
+        <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center border border-gray-100">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-red-600 mb-2">Delete Permanently</h3>
+            <p class="text-gray-600 mb-8">
+              Are you sure you want to PERMANENTLY delete <span class="font-bold text-gray-900">{{ getStaffName(staffToDelete) }}</span>? This will also delete their profile photo. This action cannot be undone.
+            </p>
+            <div class="flex gap-3">
+              <button 
+                @click="showDeleteModal = false"
+                class="flex-1 py-3 bg-gray-50 text-gray-700 rounded-xl font-bold hover:bg-gray-100 transition-all cursor-pointer"
+                :disabled="deleting"
+              >
+                Cancel
+              </button>
+              <button 
+                @click="confirmDelete"
+                class="flex-1 py-3 bg-[#b92e2b] text-white rounded-xl font-bold hover:bg-red-700 transition-all cursor-pointer disabled:opacity-70"
+                :disabled="deleting"
+              >
+                {{ deleting ? 'Deleting...' : 'Confirm Delete' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Restore All Confirmation Modal -->
+      <Transition name="modal">
+        <div v-if="showRestoreAllModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center border border-gray-100">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polyline points="9 14 4 9 9 4"></polyline>
+                <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">Restore All Staff</h3>
+            <p class="text-gray-600 mb-8">
+              Are you sure you want to restore <span class="font-bold text-gray-900">{{ archivedStaff.length }}</span> archived staff members and their attendance records?
+            </p>
+            <div class="flex gap-3">
+              <button @click="showRestoreAllModal = false" class="flex-1 py-3 bg-gray-50 text-gray-700 rounded-xl font-bold hover:bg-gray-100 transition-all cursor-pointer">Cancel</button>
+              <button @click="confirmRestoreAll" class="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all cursor-pointer disabled:opacity-70" :disabled="restoringAll">
+                {{ restoringAll ? 'Restoring...' : 'Confirm Restore All' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Delete All Confirmation Modal -->
+      <Transition name="modal">
+        <div v-if="showDeleteAllModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center border border-gray-100">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-red-600 mb-2">Delete All Permanently</h3>
+            <p class="text-gray-600 mb-8">
+              Are you sure you want to PERMANENTLY delete <span class="font-bold text-gray-900">{{ archivedStaff.length }}</span> staff records? This will also delete their profile photos. This action cannot be undone.
+            </p>
+            <div class="flex gap-3">
+              <button @click="showDeleteAllModal = false" class="flex-1 py-3 bg-gray-50 text-gray-700 rounded-xl font-bold hover:bg-gray-100 transition-all cursor-pointer">Cancel</button>
+              <button @click="confirmDeleteAll" class="flex-1 py-3 bg-[#b92e2b] text-white rounded-xl font-bold hover:bg-red-700 transition-all cursor-pointer disabled:opacity-70" :disabled="deletingAll">
+                {{ deletingAll ? 'Deleting All...' : 'Confirm Delete All' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
     </div>
 </template>
 
@@ -207,7 +273,8 @@
 import AdminSidebar from './AdminSidebar.vue'
 import TableSkeleton from '../../components/skeletons/TableSkeleton.vue'
 import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, writeBatch } from 'firebase/firestore'
-import { db } from '../../firebase.js'
+import { ref as sRef, deleteObject } from 'firebase/storage'
+import { db, storage } from '../../firebase.js'
 
 
 export default {
@@ -223,10 +290,14 @@ export default {
       loading: false,
       showRestoreModal: false,
       showDeleteModal: false,
+      showRestoreAllModal: false,
+      showDeleteAllModal: false,
       staffToRestore: null,
       staffToDelete: null,
       restoring: false,
       deleting: false,
+      restoringAll: false,
+      deletingAll: false,
     }
   },
   computed: {
@@ -306,6 +377,46 @@ export default {
         this.restoring = false
       }
     },
+
+    async confirmRestoreAll() {
+      if (this.archivedStaff.length === 0) return
+      this.restoringAll = true
+      try {
+        const batch = writeBatch(db)
+        const staffToProcess = [...this.archivedStaff]
+        
+        for (const s of staffToProcess) {
+          // Restore user
+          const userRef = doc(db, 'users', s.id)
+          batch.update(userRef, {
+            isArchived: false,
+            updatedAt: serverTimestamp()
+          })
+
+          // Restore their attendance logs
+          const attQ = query(
+            collection(db, 'staff_attendance'),
+            where('staffId', '==', s.id),
+            where('isArchived', '==', true)
+          )
+          const attSnap = await getDocs(attQ)
+          attSnap.forEach(d => {
+            batch.update(d.ref, { isArchived: false })
+          })
+        }
+
+        await batch.commit()
+        this.staffList = []
+        this.showRestoreAllModal = false
+        await this.fetchData()
+      } catch (e) {
+        console.error("Error restoring all staff:", e)
+        alert("Failed to restore all staff members.")
+      } finally {
+        this.restoringAll = false
+      }
+    },
+
     deleteStaffPermanently(s) {
       this.staffToDelete = s
       this.showDeleteModal = true
@@ -314,7 +425,14 @@ export default {
       if (!this.staffToDelete) return
       this.deleting = true
       try {
+        // 1. Delete profile photo from Storage
+        if (this.staffToDelete.photoUrl) {
+          await this.deleteFileByUrl(this.staffToDelete.photoUrl)
+        }
+
+        // 2. Delete user from Firestore
         await deleteDoc(doc(db, 'users', this.staffToDelete.id))
+        
         this.staffList = this.staffList.filter(item => item.id !== this.staffToDelete.id)
         this.showDeleteModal = false
         this.staffToDelete = null
@@ -323,6 +441,57 @@ export default {
         alert('Failed to delete staff member.')
       } finally {
         this.deleting = false
+      }
+    },
+
+    async confirmDeleteAll() {
+      if (this.archivedStaff.length === 0) return
+      this.deletingAll = true
+      try {
+        const staffToProcess = [...this.archivedStaff]
+        
+        for (const s of staffToProcess) {
+          // Delete photo
+          if (s.photoUrl) {
+            await this.deleteFileByUrl(s.photoUrl)
+          }
+
+          // Delete user doc
+          await deleteDoc(doc(db, 'users', s.id))
+        }
+
+        this.staffList = []
+        this.showDeleteAllModal = false
+        await this.fetchData()
+      } catch (e) {
+        console.error("Error deleting all staff:", e)
+        alert("Failed to delete all staff members.")
+      } finally {
+        this.deletingAll = false
+      }
+    },
+
+    async deleteFileByUrl(url) {
+      if (!url || typeof url !== 'string' || !url.includes('firebasestorage.googleapis.com')) return
+      try {
+        const path = this.extractStoragePath(url)
+        if (path) {
+          const fileRef = sRef(storage, path)
+          await deleteObject(fileRef)
+        }
+      } catch (err) {
+        console.warn(`Could not delete file at ${url}:`, err)
+      }
+    },
+
+    extractStoragePath(url) {
+      try {
+        const part = url.split('/o/')[1]
+        if (!part) return null
+        const encodedPath = part.split('?')[0]
+        return decodeURIComponent(encodedPath)
+      } catch (e) {
+        return null
       }
     }
   },
@@ -352,6 +521,3 @@ export default {
   transform: scale(0.9) translateY(20px);
 }
 </style>
-
-
-
