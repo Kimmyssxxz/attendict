@@ -92,7 +92,6 @@
                   <option value="At Office">At Office</option>
                   <option value="On Field">On Field</option>
                   <option value="Travel">Travel</option>
-                  <option value="Leave">Leave</option>
                 </select>
                 <select
                   v-model="validationFilter"
@@ -380,7 +379,7 @@
       <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full relative p-8 border border-gray-100">
         <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path fill="#ef4444" d="M10.651 21.622a.75.75 0 0 1-.808.361l-.127-.027a3.875 3.875 0 0 1-2.879-4.97L7.473 15H6.336c-2.645 0-4.513-2.591-3.676-5.1l1.559-4.678A3.25 3.25 0 0 1 7.302 3h5.289c1.031 0 2.029.354 2.828.999A1.75 1.75 0 0 1 17 3h2.25c.966 0 1.75.784 1.75 1.75v8.5A1.75 1.75 0 0 1 19.25 15h-4.67a.25.25 0 0 0-.217.126zM15.25 5.84l-.684-.598a3 3 0 0 0-1.975-.742H7.302a1.75 1.75 0 0 0-1.66 1.197l-1.559 4.677A2.375 2.375 0 0 0 6.336 13.5H8.5a.75.75 0 0 1 .714.979l-.948 2.964a2.375 2.375 0 0 0 1.373 2.927l3.422-5.988a1.75 1.75 0 0 1 1.519-.882h.67zm1.5 7.66h2.5a.25.25 0 0 0 .25-.25v-8.5a.25.25 0 0 0-.25-.25H17a.25.25 0 0 0-.25.25z"/>
+            <path fill="#ef4444" d="M10.651 21.622a.75.75 0 0 1-.808.361l-.127-.027a3.875 3.875 0 0 1-2.879-4.97L7.473 15H6.336c-2.645 0-4.513-2.591-3.676-5.1l1.559-4.678A3.25 3.25 0 0 1 7.302 3h5.289c1.031 0 2.029.354 2.828.999A1.75 1.75 0 0 1 17 3h2.25c.966 0 1.75.784 1.75 1.75v8.5A1.75 1.75 0 0 1 19.25 15h-4.67a.25.25 0 0 0-.217.126zM15.25 5.84l-.684-.598a3 3 0 0 0-1.975-.742H7.302a1.75 1.75 0 0 0-1.66 1.197l-1.559 4.677A2.375 2.375 0 0 0 6.336 13.5H8.5a.75.75 0 0 1 .714.979l-.948 2.964a2.375 2.375 0 0 0 1.373 2.927l3.422-5.988a1.75 1.75 0 0 1-1.519-.882h.67zm1.5 7.66h2.5a.25.25 0 0 0 .25-.25v-8.5a.25.25 0 0 0-.25-.25H17a.25.25 0 0 0-.25.25z"/>
           </svg>
         </div>
         
@@ -466,6 +465,13 @@ export default {
    
     filteredAttendances() {
       return this.staffAttendances.filter(att => {
+        // Filter out ANY record that belongs in the Leave Management view
+        const isLeave = att.staffStatus === 'Leave' || 
+                       att.staffStatusAM === 'Leave' || 
+                       att.staffStatusPM === 'Leave' || 
+                       (att.leaveStartDate && att.leaveStartDate !== null);
+        if (isLeave) return false
+
         // Staff Selection Filter
         if (this.selectedStaffId && att.staffId !== this.selectedStaffId) return false
 
