@@ -34,7 +34,7 @@
 
             <div class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] justify-start gap-3">
               <button
-                v-for="intern in filteredInternCards"
+                v-for="intern in paginatedInternCards"
                 :key="intern.id"
                 type="button"
                 :class="[
@@ -71,6 +71,42 @@
                   {{ intern.id === selectedInternId ? 'Selected' : 'Review' }}
                 </div>
               </button>
+            </div>
+
+            <!-- Intern Pagination Controls -->
+            <div v-if="filteredInternCards.length > 0" class="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div class="text-[0.75rem] font-medium text-gray-500 italic">
+                Showing <span class="text-gray-900 font-bold">{{ (internPage - 1) * internItemsPerPage + 1 }}</span> to <span class="text-gray-900 font-bold">{{ Math.min(internPage * internItemsPerPage, filteredInternCards.length) }}</span> of <span class="text-gray-900 font-bold">{{ filteredInternCards.length }}</span> interns
+              </div>
+              
+              <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 text-[0.75rem] font-medium text-gray-500">
+                  <label>Show:</label>
+                  <select v-model="internItemsPerPage" class="px-2 py-1 rounded-lg border border-gray-200 bg-gray-50 text-[0.75rem] font-bold text-gray-900 outline-none hover:border-gray-300 transition-colors cursor-pointer" @change="internPage = 1">
+                    <option v-for="size in internPageSizeOptions" :key="size" :value="size">{{ size }}</option>
+                  </select>
+                </div>
+                
+                <div class="flex items-center gap-1">
+                  <button 
+                    class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 cursor-pointer transition-all hover:bg-gray-50 hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed" 
+                    :disabled="internPage === 1" 
+                    @click="internPage--"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  </button>
+                  <div class="px-3 text-[0.75rem] font-bold text-gray-900">
+                    {{ internPage }} <span class="text-gray-400 font-normal ml-0.5">/</span> {{ totalInternPages }}
+                  </div>
+                  <button 
+                    class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 cursor-pointer transition-all hover:bg-gray-50 hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed" 
+                    :disabled="internPage === totalInternPages" 
+                    @click="internPage++"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -444,6 +480,9 @@ export default {
       currentPage: 1,
       itemsPerPage: 10,
       pageSizeOptions: [5, 10, 15, 20, 25, 30],
+      internPage: 1,
+      internItemsPerPage: 10,
+      internPageSizeOptions: [5, 10, 15, 20, 25, 30],
       rejectReasonModalVisible: false,
       rejectingRow: null,
       rejectingSession: null,
@@ -503,8 +542,19 @@ export default {
     },
     filteredInternCards() {
       const term = this.internCardSearch.trim().toLowerCase()
-      if (!term) return this.interns
-      return this.interns.filter((i) => (i.name || '').toLowerCase().includes(term))
+      let list = this.interns
+      if (term) {
+        list = list.filter((i) => (i.name || '').toLowerCase().includes(term))
+      }
+      return list
+    },
+    paginatedInternCards() {
+      const start = (this.internPage - 1) * this.internItemsPerPage
+      const end = start + this.internItemsPerPage
+      return this.filteredInternCards.slice(start, end)
+    },
+    totalInternPages() {
+      return Math.ceil(this.filteredInternCards.length / this.internItemsPerPage) || 1
     },
     totalPages() {
       return Math.ceil(this.filteredRecords.length / this.itemsPerPage)
