@@ -199,6 +199,26 @@
                 <div class="w-full space-y-3 bg-purple-50/50 p-5 rounded-2xl border border-purple-100">
                    <div class="text-left"><label class="text-xs font-medium   ml-1">Start Date</label><input type="date" v-model="leaveStartDate" class="w-full bg-white border border-purple-100 rounded-xl px-4 py-3 text-sm font-medium mt-1" /></div>
                    <div class="text-left"><label class="text-xs font-medium   ml-1">End Date</label><input type="date" v-model="leaveEndDate" class="w-full bg-white border border-purple-100 rounded-xl px-4 py-3 text-sm font-medium mt-1" /></div>
+                   
+                   <!-- Leave Document Upload (Mobile) -->
+                   <div class="text-left space-y-2">
+                     <label class="text-xs font-medium ml-1">Leave Documents (Optional)</label>
+                     <input type="file" ref="leaveFileInputMobile" @change="handleLeaveFileUpload" multiple class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                     <button @click="triggerLeaveFileUpload('mobile')" class="w-full py-3 bg-white border border-purple-200 rounded-xl text-sm font-semibold text-purple-700 flex items-center justify-center gap-2 hover:bg-purple-50 transition-colors">
+                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                       Upload Document
+                     </button>
+                     
+                     <div v-if="leaveDocumentUrls.length > 0" class="space-y-2 mt-2">
+                       <div v-for="(doc, index) in leaveDocumentUrls" :key="index" class="flex items-center justify-between p-2.5 bg-white rounded-xl border border-purple-100 shadow-sm text-xs">
+                         <span class="truncate max-w-[150px] font-medium text-gray-700">{{ doc.name || 'Document' }}</span>
+                         <button @click="removeLeaveDocument(index)" class="text-red-500 p-1.5 hover:bg-red-50 rounded-lg">
+                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                         </button>
+                       </div>
+                     </div>
+                   </div>
+
                    <button @click="submitLeaveDetails" :disabled="!leaveStartDate || !leaveEndDate || submittingLeave" 
                            class="w-full h-12 rounded-xl bg-[#eebb3b] text-white font-medium mt-4">
                      {{ submittingLeave ? 'Submitting...' : 'Submit Request' }}
@@ -381,10 +401,41 @@
                   <h4 class="text-2xl font-bold text-gray-900 mb-2">Leave Mode</h4>
                   <p class="text-gray-500 mb-8">Enjoy your time off! Your status has been noted.</p>
                   <div class="grid grid-cols-2 gap-3 mb-4 max-w-sm mx-auto">
-                    <input type="date" v-model="leaveStartDate" class="bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-bold" />
-                    <input type="date" v-model="leaveEndDate" class="bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-bold" />
+                    <div class="text-left">
+                      <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Start Date</label>
+                      <input type="date" v-model="leaveStartDate" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-bold mt-1" />
+                    </div>
+                    <div class="text-left">
+                      <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">End Date</label>
+                      <input type="date" v-model="leaveEndDate" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-bold mt-1" />
+                    </div>
                   </div>
-                  <button @click="submitLeaveDetails" :disabled="!leaveStartDate || !leaveEndDate" class="max-w-sm mx-auto w-full h-12 rounded-xl bg-blue-600 text-white font-bold shadow-md hover:-translate-y-0.5 transition-all">Submit Request</button>
+
+                  <!-- Leave Document Upload (Desktop) -->
+                  <div class="max-w-sm mx-auto mb-6 text-left">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Leave Documents (Optional)</label>
+                    <input type="file" ref="leaveFileInputDesktop" @change="handleLeaveFileUpload" multiple class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                    <button @click="triggerLeaveFileUpload('desktop')" class="w-full mt-1 py-3.5 bg-white border border-dashed border-gray-300 rounded-xl text-sm font-bold text-gray-600 flex items-center justify-center gap-2 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/50 transition-all group">
+                      <svg class="text-gray-400 group-hover:text-blue-500" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                      Upload Supporting Documents
+                    </button>
+                    
+                    <div v-if="leaveDocumentUrls.length > 0" class="grid grid-cols-1 gap-2 mt-3">
+                      <div v-for="(doc, index) in leaveDocumentUrls" :key="index" class="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-100 shadow-sm text-sm group-item hover:border-blue-100 transition-all">
+                        <div class="flex items-center gap-2 overflow-hidden">
+                          <svg class="text-blue-500 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                          <span class="truncate font-semibold text-gray-700">{{ doc.name || 'Document' }}</span>
+                        </div>
+                        <button @click="removeLeaveDocument(index)" class="text-gray-400 hover:text-red-500 p-1 rounded-lg hover:bg-red-50 transition-colors">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button @click="submitLeaveDetails" :disabled="!leaveStartDate || !leaveEndDate || submittingLeave" class="max-w-sm mx-auto w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-lg shadow-blue-200 hover:-translate-y-1 active:translate-y-0 transition-all disabled:opacity-50 disabled:translate-y-0">
+                    {{ submittingLeave ? 'Submitting Request...' : 'Submit Leave Request' }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -482,6 +533,8 @@
   const avatarMenuOpen = ref(false)
   const mobileStatusDropdownEl = ref(null)
   const desktopStatusDropdownEl = ref(null)
+  const leaveFileInputMobile = ref(null)
+  const leaveFileInputDesktop = ref(null)
   const statusDropdownOpen = ref(false)
   const isMobile = ref(false)
 
@@ -606,6 +659,14 @@
     selectedStatus.value = status
     statusDropdownOpen.value = false
     onStatusChange()
+  }
+
+  const triggerLeaveFileUpload = (mode) => {
+    if (mode === 'mobile' && leaveFileInputMobile.value) {
+      leaveFileInputMobile.value.click()
+    } else if (mode === 'desktop' && leaveFileInputDesktop.value) {
+      leaveFileInputDesktop.value.click()
+    }
   }
 
   // Attendance state
