@@ -61,8 +61,13 @@
         </div>
       </form>
 
-      <div class="mt-4 text-sm text-gray-500 flex justify-center items-center gap-1 w-full">
-        Don't have an account? <router-link to="/auth/register" class="text-[#b92e2b] hover:underline font-semibold">Sign up</router-link>
+      <div class="mt-4 text-sm text-gray-500 flex flex-col items-center gap-2 w-full">
+        <div class="flex items-center gap-1">
+          Don't have an account? <router-link to="/auth/register" class="text-[#b92e2b] hover:underline font-semibold">Sign up</router-link>
+        </div>
+        <div class="pt-2 border-t border-gray-100 w-full text-center">
+          <router-link to="/auth/admin/login" class="text-xs text-gray-400 hover:text-[#133e75] transition-colors">Admin Portal</router-link>
+        </div>
       </div>
     </div>
   </div>
@@ -150,8 +155,13 @@
             </div>
           </form>
 
-          <div class="mt-8 text-sm text-gray-500 flex justify-center lg:justify-start items-center gap-1 w-full">
-            Don't have an account?<router-link to="/auth/register" class="text-[#b92e2b] hover:underline font-medium">Sign up</router-link>
+          <div class="mt-8 text-sm text-gray-500 flex flex-col lg:items-start items-center gap-2 w-full">
+            <div class="flex items-center gap-1">
+              Don't have an account?<router-link to="/auth/register" class="text-[#b92e2b] hover:underline font-medium">Sign up</router-link>
+            </div>
+            <div class="pt-2 border-t border-gray-100 w-full lg:text-left text-center">
+              <router-link to="/auth/admin/login" class="text-xs text-gray-400 hover:text-[#133e75] transition-colors">Admin Portal Access</router-link>
+            </div>
           </div>
         </div>
       </div>
@@ -289,9 +299,13 @@ export default {
           localStorage.setItem('user', JSON.stringify(user));
           localStorage.setItem('staffUser', JSON.stringify(user));
           this.showCustomModal('success', 'Login Successful', 'Welcome back! Redirecting to dashboard...', { type: 'redirect', route: { name: 'StaffDashboard' } });
+        } else if (user.role === 'admin') {
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('adminUser', JSON.stringify(user));
+          this.showCustomModal('success', 'Login Successful', 'Welcome Admin! Redirecting to portal...', { type: 'redirect', route: { name: 'AdminDashboard' } });
         } else {
           console.error('Unhandled role type:', user.role);
-          throw new Error('This login page is only for intern and staff accounts.');
+          throw new Error('Unauthorized role.');
         }
       } catch (error) {
         console.error('Login error:', error);

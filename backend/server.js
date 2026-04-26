@@ -583,6 +583,11 @@ app.post('/auth/login', async (req, res) => {
       snapshot = await usersRef.where('email', '==', usernameNormalized).limit(1).get();
     }
 
+    if (snapshot.empty) {
+      // Fallback to check admins collection
+      snapshot = await db.collection('admins').where('username', 'in', usernameCandidates).limit(1).get();
+    }
+
 
     if (snapshot.empty) {
       return res.status(401).json({ message: 'Invalid username or password' });
@@ -2232,9 +2237,9 @@ app.listen(PORT, '0.0.0.0', () => {
 async function ensureAdminAccount() {
   try {
     const adminRef = db.collection('admins');
-    const snap = await adminRef.limit(1).get();
-    if (snap.empty) {
-      console.log('[Startup] No admin account found in "admins" collection. Creating default admin...');
+    const existing = await adminRef.where('username', '==', 'admin').limit(1).get();
+    if (existing.empty) {
+      console.log('[Startup] No "admin" account found in "admins" collection. Creating default admin...');
       const hashedPassword = await bcrypt.hash('admin123', 10);
       await adminRef.add({
         username: 'admin',
