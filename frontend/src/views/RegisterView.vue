@@ -110,7 +110,8 @@
           v-model="form.assignedOffice"
           type="text"
           required
-          class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:border-blue-500 focus:outline-none transition-colors"
+          readonly
+          class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:border-blue-500 focus:outline-none transition-colors bg-gray-50 text-gray-500 cursor-not-allowed"
           placeholder="Assigned Office / Company"
         />
 
@@ -386,7 +387,8 @@
                   v-model="form.assignedOffice"
                   type="text"
                   required
-                  class="w-full px-4 py-2.5 border border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors"
+                  readonly
+                  class="w-full px-4 py-2.5 border border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors bg-gray-50 text-gray-500 cursor-not-allowed"
                   placeholder="Assigned Office / Company"
                 />
               </div>
