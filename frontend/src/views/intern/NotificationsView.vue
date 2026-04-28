@@ -225,16 +225,16 @@
             
             <!-- Mobile Header Buttons -->
             <div class="flex items-center justify-between px-1 mb-1">
-              <div class="flex items-center gap-4">
+              <div class="flex items-center gap-2">
                 <button class="border-none bg-[#dae9fb] text-[#13438a] font-medium text-xs px-4 py-2 rounded-full cursor-pointer active:scale-95 transition-transform shrink-0 flex items-center gap-1" :disabled="!unreadCount" @click="markAllAsRead">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                   Mark all as read
                 </button>
-                <button class="border-none bg-transparent text-slate-800 font-medium text-[0.95rem] p-0 cursor-pointer disabled:opacity-50" :disabled="!selectedIndexes.length" @click="deleteSelected">
+                <button class="border-none bg-gray-100 text-gray-600 hover:bg-gray-200 font-medium text-xs px-3 py-2 rounded-full cursor-pointer active:scale-95 transition-colors disabled:opacity-50" :disabled="!selectedIndexes.length" @click="deleteSelected">
                   Delete Selected
                 </button>
               </div>
-              <button class="border-none bg-transparent text-[#d55e5a] font-medium text-[0.95rem] p-0 cursor-pointer disabled:opacity-50 whitespace-nowrap ml-2" :disabled="!notifications.length" @click="deleteAll">
+              <button class="border-none bg-red-50 text-red-600 hover:bg-red-100 font-medium text-xs px-3 py-2 rounded-full cursor-pointer active:scale-95 transition-colors disabled:opacity-50 whitespace-nowrap ml-2" :disabled="!notifications.length" @click="deleteAll">
                 Delete All
               </button>
             </div>
