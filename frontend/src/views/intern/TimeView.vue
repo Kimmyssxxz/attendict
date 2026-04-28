@@ -998,7 +998,7 @@ export default {
                 console.warn('Geolocation error for time-in:', err);
                 resolve(null);
               },
-              { enableHighAccuracy: true, timeout: 10000 }
+              { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
             );
           });
         } catch (e) {
@@ -1063,7 +1063,7 @@ export default {
                 console.warn('Geolocation error for time-out:', err);
                 resolve(null);
               },
-              { enableHighAccuracy: true, timeout: 10000 }
+              { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
             );
           });
         } catch (e) {
