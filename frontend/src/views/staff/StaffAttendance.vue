@@ -1673,7 +1673,7 @@
       leafletMap.value = L.map(leafletMapEl.value, {
         zoomControl: true,
         attributionControl: true,
-      }).setView([lat, lng], 16)
+      }).setView([lat, lng], 18)
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -1682,7 +1682,7 @@
 
       leafletMarker.value = L.marker([lat, lng]).addTo(leafletMap.value)
     } else {
-      leafletMap.value.setView([lat, lng], 16)
+      leafletMap.value.setView([lat, lng], 18)
       if (leafletMarker.value) {
         leafletMarker.value.setLatLng([lat, lng])
       } else {
