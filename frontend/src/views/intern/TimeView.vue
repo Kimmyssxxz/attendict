@@ -687,9 +687,11 @@ export default {
     },
     locationMatchesAutoApprove(address) {
       const normalized = this.normalizeLocation(address)
-      const target = this.normalizeLocation(AUTO_APPROVE_LOCATION)
-      if (!normalized || !target) return false
-      return normalized === target || normalized.includes(target)
+      const targetWithZip = this.normalizeLocation('M. Roxas Drive, Lalom, Santa Isabel, Calapan, Oriental Mindoro, Mimaropa, 5200, Philippines')
+      const targetWithoutZip = this.normalizeLocation('M. Roxas Drive, Lalom, Santa Isabel, Calapan, Oriental Mindoro, Mimaropa, Philippines')
+      
+      if (!normalized) return false
+      return normalized.includes(targetWithZip) || normalized.includes(targetWithoutZip) || targetWithZip.includes(normalized) || targetWithoutZip.includes(normalized)
     },
     async autoApproveIfEligible({ date, session, record, fallbackAddress }) {
       try {
