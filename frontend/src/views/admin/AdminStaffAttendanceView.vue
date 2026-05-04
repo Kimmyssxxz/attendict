@@ -676,7 +676,10 @@ export default {
         const s = this.staffToDelete
         // 1. Archive the staff profile
         const userRef = doc(db, 'users', s.id)
-        await updateDoc(userRef, { isArchived: true })
+        await updateDoc(userRef, { 
+          isArchived: true,
+          archivedAt: serverTimestamp()
+        })
 
 
         // 2. Archive all associated attendance records
@@ -686,7 +689,10 @@ export default {
         if (!attendanceSnap.empty) {
           const batch = writeBatch(db)
           attendanceSnap.docs.forEach((d) => {
-            batch.update(d.ref, { isArchived: true })
+            batch.update(d.ref, { 
+              isArchived: true,
+              archivedAt: serverTimestamp()
+            })
           })
           await batch.commit()
         }

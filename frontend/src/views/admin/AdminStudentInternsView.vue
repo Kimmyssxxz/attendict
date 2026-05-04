@@ -990,7 +990,10 @@ export default {
         const intern = this.internToDelete
         // 1. Archive student profile
         const ref = doc(db, 'users', intern.id)
-        await updateDoc(ref, { isArchived: true })
+        await updateDoc(ref, { 
+          isArchived: true,
+          archivedAt: serverTimestamp()
+        })
 
         // 2. Archive associated attendance records
         const attendanceQuery = query(collection(db, 'intern_attendance'), where('internId', '==', intern.id))
@@ -999,7 +1002,10 @@ export default {
         if (!attendanceSnap.empty) {
           const batch = writeBatch(db)
           attendanceSnap.docs.forEach((d) => {
-            batch.update(d.ref, { isArchived: true })
+            batch.update(d.ref, { 
+              isArchived: true,
+              archivedAt: serverTimestamp()
+            })
           })
           await batch.commit()
         }

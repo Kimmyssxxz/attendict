@@ -13,6 +13,7 @@
           <div>
             <h1 class="text-3xl font-semibold text-gray-900">Archived Attendance Logs</h1>
             <p class="text-gray-500 ">View staff attendance logs that have been archived.</p>
+            <p class="text-xs text-red-500 italic mt-1 font-medium">Note: Data in the archive will be permanently deleted after 30 days if not restored.</p>
           </div>
           <div class="ml-auto flex gap-3">
             <button 

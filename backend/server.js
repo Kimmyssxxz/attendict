@@ -2279,6 +2279,45 @@ app.post('/admin/attendance/retag-session', async (req, res) => {
   }
 });
 
+// --- ARCHIVE CLEANUP LOGIC (30 DAYS) ---
+async function cleanupArchivedData() {
+  console.log('[Cleanup] Starting archived data cleanup check...');
+  const db = admin.firestore();
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const threshold = admin.firestore.Timestamp.fromDate(thirtyDaysAgo);
+
+  const collections = ['users', 'staff_attendance', 'intern_attendance'];
+  let totalDeleted = 0;
+
+  for (const collName of collections) {
+    try {
+      const q = db.collection(collName)
+        .where('isArchived', '==', true)
+        .where('archivedAt', '<=', threshold);
+      
+      const snap = await q.get();
+      if (snap.empty) continue;
+
+      const batch = db.batch();
+      snap.docs.forEach(doc => {
+        batch.delete(doc.ref);
+        totalDeleted++;
+      });
+      await batch.commit();
+      console.log(`[Cleanup] Deleted ${snap.size} old archived records from ${collName}.`);
+    } catch (error) {
+      console.error(`[Cleanup] Error cleaning up ${collName}:`, error.message);
+    }
+  }
+  console.log(`[Cleanup] Finished. Total deleted: ${totalDeleted}`);
+}
+
+// Run cleanup every 24 hours
+setInterval(cleanupArchivedData, 24 * 60 * 60 * 1000);
+// Also run once on startup (after a short delay to ensure everything is initialized)
+setTimeout(cleanupArchivedData, 10000);
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Backend server running on port ${PORT}`);

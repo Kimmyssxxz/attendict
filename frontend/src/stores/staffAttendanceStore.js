@@ -552,6 +552,7 @@ export const useStaffAttendanceStore = defineStore('staffAttendance', {
         const docRef = doc(db, 'staff_attendance', attendanceId)
         await updateDoc(docRef, {
           isArchived: true,
+          archivedAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         })
 
