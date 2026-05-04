@@ -125,7 +125,7 @@
             placeholder="School / University"
           />
           <p class="mt-[-8px] mb-2 text-[11px] text-red-500 italic">
-            Note: Wag i-abbreviate ang school dahil mag-appear ito sa certificate.
+            Note: Do not abbreviate the school name as it will appear on your certificate.
           </p>
           <input
             v-model="form.course"
@@ -408,7 +408,7 @@
                   placeholder="School / University"
                 />
                 <p class="mt-1 text-[11px] text-red-500 italic">
-                  Note: Wag i-abbreviate ang school dahil mag-appear ito sa certificate.
+                  Note: Do not abbreviate the school name as it will appear on your certificate.
                 </p>
               </div>
 
