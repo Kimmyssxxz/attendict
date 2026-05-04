@@ -14,13 +14,23 @@ let transporter;
 async function initMailer() {
   if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
     });
-    console.log('[Mailer] Custom SMTP configuration loaded.');
+    
+    try {
+      await transporter.verify();
+      console.log('[Mailer] Custom SMTP (Gmail) connected and verified.');
+    } catch (error) {
+      console.error('[Mailer] Custom SMTP verification failed:', error.message);
+      // Fallback to test account if verification fails? 
+      // Maybe not, better to know it failed.
+    }
   } else {
     // Fallback to test account
     const testAccount = await nodemailer.createTestAccount();
@@ -33,7 +43,7 @@ async function initMailer() {
         pass: testAccount.pass,
       },
     });
-    console.log('[Mailer] Running in Testing mode (Ethereal test account). Emails will not reach real inboxes.');
+    console.log('[Mailer] Running in Testing mode (Ethereal). Emails will not reach real inboxes.');
   }
 }
 initMailer();
@@ -79,7 +89,10 @@ async function sendOtpEmail(email, otp, context = 'verify') {
       console.log(`[OTP Test Mode] Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
     }
   } catch (error) {
-    console.error(`[OTP] Email failed for ${email}:`, error);
+    console.error(`[OTP] Email failed for ${email}:`, error.message);
+    if (error.code === 'EAUTH') {
+      console.error('[OTP] Authentication failed. Check your Gmail App Password.');
+    }
   }
 }
 
