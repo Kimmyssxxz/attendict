@@ -124,6 +124,9 @@
             class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:border-blue-500 focus:outline-none transition-colors"
             placeholder="School / University"
           />
+          <p class="mt-[-8px] mb-2 text-[11px] text-red-500 italic">
+            Note: Wag i-abbreviate ang school dahil mag-appear ito sa certificate.
+          </p>
           <input
             v-model="form.course"
             type="text"
@@ -634,6 +637,11 @@ export default {
     async handleRegister() {
       if (!this.form.role) {
         this.showCustomModal('error', 'Role Required', 'Please select a role.');
+        return;
+      }
+
+      if (!this.form.username || !this.form.email || !this.form.firstName || !this.form.lastName || !this.form.middleName) {
+        this.showCustomModal('error', 'All Fields Required', 'Please fill in all required fields, including your middle name.');
         return;
       }
 
