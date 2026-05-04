@@ -7,12 +7,17 @@ const path = require('path');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-let transporter;
+let resendClient;
 
 async function initMailer() {
-  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+  if (process.env.RESEND_API_KEY) {
+    resendClient = new Resend(process.env.RESEND_API_KEY);
+    console.log('[Mailer] Resend API client initialized.');
+  } else if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    // Keep SMTP as backup just in case
+    const nodemailer = require('nodemailer');
     transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 465,
@@ -22,17 +27,15 @@ async function initMailer() {
         pass: process.env.SMTP_PASS,
       },
     });
-    
     try {
       await transporter.verify();
       console.log('[Mailer] Custom SMTP (Gmail) connected and verified.');
     } catch (error) {
       console.error('[Mailer] Custom SMTP verification failed:', error.message);
-      // Fallback to test account if verification fails? 
-      // Maybe not, better to know it failed.
     }
   } else {
     // Fallback to test account
+    const nodemailer = require('nodemailer');
     const testAccount = await nodemailer.createTestAccount();
     transporter = nodemailer.createTransport({
       host: testAccount.smtp.host,
@@ -53,46 +56,54 @@ function generateOTP() {
 }
 
 async function sendOtpEmail(email, otp, context = 'verify') {
-  if (!transporter) {
-    console.warn(`[OTP] Mailer not initialized yet. OTP for ${email} is ${otp}`);
-    return;
+  let subject = 'Verify your Attendict account';
+  let textBody = `Welcome to Attendict!\n\nYour verification code is: ${otp}\n\nThis code will expire in 10 minutes.`;
+  let htmlHeading = 'Welcome to Attendict!';
+  let htmlIntro = 'Your verification code is:';
+  
+  if (context === 'password_reset') {
+    subject = 'Password Reset Request';
+    textBody = `You requested a password reset.\n\nYour reset code is: ${otp}\n\nThis code will expire in 10 minutes.\nIf you did not request this, please ignore this email.`;
+    htmlHeading = 'Password Reset Request';
+    htmlIntro = 'Your password reset code is:';
   }
-  try {
-    let subject = 'Verify your Attendict account';
-    let textBody = `Welcome to Attendict!\n\nYour verification code is: ${otp}\n\nThis code will expire in 10 minutes.`;
-    let htmlHeading = 'Welcome to Attendict!';
-    let htmlIntro = 'Your verification code is:';
-    
-    if (context === 'password_reset') {
-      subject = 'Password Reset Request';
-      textBody = `You requested a password reset.\n\nYour reset code is: ${otp}\n\nThis code will expire in 10 minutes.\nIf you did not request this, please ignore this email.`;
-      htmlHeading = 'Password Reset Request';
-      htmlIntro = 'Your password reset code is:';
-    }
 
-    const info = await transporter.sendMail({
-      from: `"Attendict" <${process.env.SMTP_USER || 'no-reply@attendict.test'}>`,
-      to: email,
-      subject: subject,
-      text: textBody,
-      html: `
-        <div style="font-family: sans-serif; padding: 20px;">
-          <h2>${htmlHeading}</h2>
-          <p>${htmlIntro}</p>
-          <h1 style="color: #133e75; letter-spacing: 2px;">${otp}</h1>
-          <p>This code will expire in 10 minutes.</p>
-        </div>
-      `
-    });
-    console.log(`[OTP] Sent to ${email}`);
-    if (!process.env.SMTP_USER) {
-      console.log(`[OTP Test Mode] Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+  const htmlContent = `
+    <div style="font-family: sans-serif; padding: 20px;">
+      <h2>${htmlHeading}</h2>
+      <p>${htmlIntro}</p>
+      <h1 style="color: #133e75; letter-spacing: 2px;">${otp}</h1>
+      <p>This code will expire in 10 minutes.</p>
+    </div>
+  `;
+
+  if (resendClient) {
+    try {
+      await resendClient.emails.send({
+        from: 'Attendict <onboarding@resend.dev>',
+        to: email,
+        subject: subject,
+        html: htmlContent,
+      });
+      console.log(`[OTP] Sent via Resend to ${email}`);
+    } catch (error) {
+      console.error(`[OTP] Resend failed for ${email}:`, error.message);
     }
-  } catch (error) {
-    console.error(`[OTP] Email failed for ${email}:`, error.message);
-    if (error.code === 'EAUTH') {
-      console.error('[OTP] Authentication failed. Check your Gmail App Password.');
+  } else if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: `"Attendict" <${process.env.SMTP_USER || 'no-reply@attendict.test'}>`,
+        to: email,
+        subject: subject,
+        text: textBody,
+        html: htmlContent
+      });
+      console.log(`[OTP] Sent via SMTP to ${email}`);
+    } catch (error) {
+      console.error(`[OTP] SMTP failed for ${email}:`, error.message);
     }
+  } else {
+    console.warn(`[OTP] No mailer initialized. OTP for ${email} is ${otp}`);
   }
 }
 

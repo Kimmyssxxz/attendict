@@ -13,6 +13,7 @@
     "firebase-admin": "^11.11.1",
     "node-fetch": "^3.3.2",
     "nodemailer": "^8.0.5",
-    "protobufjs": "^7.5.4"
+    "protobufjs": "^7.5.4",
+    "resend": "^6.12.2"
   }
 }
